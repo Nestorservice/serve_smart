@@ -1,0 +1,253 @@
+/**
+ * SIGR Custom Styles - Dashboard Cards and Components
+ * Adds gradient cards, badges, and custom styling for SIGR application
+ */
+
+/* Gradient Cards for Dashboard */
+.card-bx {
+    border-radius: 1.25rem;
+    border: none;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card-bx:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.gradient-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.gradient-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+}
+
+.gradient-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.gradient-4 {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
+
+.gradient-5 {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+/* Badge styles */
+.badge-lg {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.badge-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.badge-primary {
+    background-color: #667eea !important;
+}
+
+.badge-success {
+    background-color: #28a745 !important;
+}
+
+.badge-danger {
+    background-color: #dc3545 !important;
+}
+
+.badge-info {
+    background-color: #17a2b8 !important;
+}
+
+.badge-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Font utilities */
+.font-w500 {
+    font-weight: 500 !important;
+}
+
+.font-w600 {
+    font-weight: 600 !important;
+}
+
+.fs-16 {
+    font-size: 16px !important;
+}
+
+.fs-24 {
+    font-size: 24px !important;
+}
+
+/* Stats card improvements */
+.card.card-bx .card-body {
+    padding: 1.5rem;
+}
+
+.card.card-bx h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0;
+}
+
+/* Table improvements */
+.table.table-hover tbody tr {
+    transition: background-color 0.2s;
+}
+
+.table.table-hover tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* Button enhancements */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b4095 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Card hover effect */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Alert improvements */
+.alert {
+    border: none;
+    border-radius: 0.75rem;
+}
+
+/* Chart containers */
+canvas {
+    max-width: 100%;
+}
+
+/* Menu Sidebar Active State Enhancement */
+.dlabnav .metismenu li.mm-active > a {
+    color: #667eea !important;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 0.5rem;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .card-bx h2 {
+        font-size: 1.5rem;
+    }
+    
+    .gradient-1, .gradient-2, .gradient-3, .gradient-4 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Loading animation */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(102, 126, 234, 0.3);
+    border-radius: 50%;
+    border-top-color: #667eea;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-notification {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Quick actions card */
+.quick-actions .btn {
+    text-align: left;
+    padding: 0.75rem 1rem;
+}
+
+.quick-actions .btn i {
+    width: 24px;
+}
+
+/* Popular products list */
+.popular-product-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.popular-product-item:last-child {
+    border-bottom: none;
+}
+
+.popular-product-rank {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-right: 12px;
+}
+
+/* Stats mini-cards */
+.stat-widget {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.stat-widget h3 {
+    color: #667eea;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-widget p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.9rem;
+}
