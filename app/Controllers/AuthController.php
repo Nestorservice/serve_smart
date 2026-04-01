@@ -11,7 +11,7 @@ use Core\Session;
 use Core\Helpers;
 use Models\UserModel;
 
-class AuthController
+class AuthController extends \Core\Controller
 {
     private Session $session;
     private UserModel $userModel;
@@ -33,7 +33,7 @@ class AuthController
             exit;
         }
         
-        Helpers::render('admin/login', [
+        $this->render('admin/login', [
             'error' => $this->session->getFlash('error'),
             'success' => $this->session->getFlash('success')
         ]);

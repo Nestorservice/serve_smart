@@ -16,7 +16,7 @@ use Models\StockModel;
 use Models\TableModel;
 use Models\UserModel;
 
-class AdminController
+class AdminController extends \Core\Controller
 {
     private Session $session;
     
@@ -45,7 +45,7 @@ class AdminController
         $pendingOrders = count($orderModel->getPendingPayments());
         $topProducts = $orderModel->getTopProducts(5);
         
-        Helpers::render('admin/dashboard', [
+        $this->render('admin/dashboard', [
             'stats' => [
                 'today_sales' => $todayStats['paid_sales'] ?? 0,
                 'total_orders' => $todayStats['total_orders'] ?? 0,
@@ -66,7 +66,7 @@ class AdminController
         $productModel = new ProductModel();
         $categoryModel = new CategoryModel();
         
-        Helpers::render('admin/menu', [
+        $this->render('admin/menu', [
             'products' => $productModel->getAll(),
             'categories' => $categoryModel->getAll(),
             'staffName' => $this->session->getStaffName()
@@ -80,7 +80,7 @@ class AdminController
     {
         $categoryModel = new CategoryModel();
         
-        Helpers::render('admin/menu-form', [
+        $this->render('admin/menu-form', [
             'product' => null,
             'categories' => $categoryModel->getAll(),
             'staffName' => $this->session->getStaffName()
@@ -138,7 +138,7 @@ class AdminController
             exit;
         }
         
-        Helpers::render('admin/menu-form', [
+        $this->render('admin/menu-form', [
             'product' => $product,
             'categories' => $categoryModel->getAll(),
             'staffName' => $this->session->getStaffName()
@@ -228,7 +228,7 @@ class AdminController
     {
         $categoryModel = new CategoryModel();
         
-        Helpers::render('admin/categories', [
+        $this->render('admin/categories', [
             'categories' => $categoryModel->getAllWithProductCount(),
             'staffName' => $this->session->getStaffName()
         ]);
@@ -266,7 +266,7 @@ class AdminController
     {
         $stockModel = new StockModel();
         
-        Helpers::render('admin/stock', [
+        $this->render('admin/stock', [
             'stocks' => $stockModel->getAll(),
             'lowStock' => $stockModel->getLowStock(),
             'staffName' => $this->session->getStaffName()
@@ -313,7 +313,7 @@ class AdminController
     {
         $tableModel = new TableModel();
         
-        Helpers::render('admin/tables', [
+        $this->render('admin/tables', [
             'tables' => $tableModel->getWithActiveOrders(),
             'staffName' => $this->session->getStaffName()
         ]);
@@ -359,7 +359,7 @@ class AdminController
         // Utiliser l'API QR Code
         $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($qrUrl);
         
-        Helpers::render('admin/qr-display', [
+        $this->render('admin/qr-display', [
             'table' => $table,
             'qrUrl' => $qrUrl,
             'qrImage' => $qrApiUrl,
@@ -378,7 +378,7 @@ class AdminController
         $status = $_GET['status'] ?? null;
         $date = $_GET['date'] ?? date('Y-m-d');
         
-        Helpers::render('admin/orders', [
+        $this->render('admin/orders', [
             'orders' => $orderModel->getPendingPayments(),
             'staffName' => $this->session->getStaffName()
         ]);
@@ -397,7 +397,7 @@ class AdminController
             exit;
         }
         
-        Helpers::render('admin/order-details', [
+        $this->render('admin/order-details', [
             'order' => $order,
             'staffName' => $this->session->getStaffName()
         ]);
@@ -413,7 +413,7 @@ class AdminController
         $startDate = $_GET['start'] ?? date('Y-m-d', strtotime('-30 days'));
         $endDate = $_GET['end'] ?? date('Y-m-d');
         
-        Helpers::render('admin/stats', [
+        $this->render('admin/stats', [
             'stats' => $orderModel->getSalesStats($startDate, $endDate),
             'topProducts' => $orderModel->getTopProducts(10, $startDate, $endDate),
             'startDate' => $startDate,
@@ -427,7 +427,7 @@ class AdminController
      */
     public function settings(): void
     {
-        Helpers::render('admin/settings', [
+        $this->render('admin/settings', [
             'settings' => [
                 'restaurant_name' => Helpers::getSetting('restaurant_name'),
                 'currency' => Helpers::getSetting('currency'),
@@ -479,7 +479,7 @@ class AdminController
         
         $userModel = new UserModel();
         
-        Helpers::render('admin/users', [
+        $this->render('admin/users', [
             'users' => $userModel->getAll(),
             'staffName' => $this->session->getStaffName()
         ]);

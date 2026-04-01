@@ -11,14 +11,8 @@ use Core\Database;
 use Core\Helpers;
 use Exception;
 
-class OrderModel
+class OrderModel extends \Core\Model
 {
-    private Database $db;
-    
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
     
     /**
      * Créer une nouvelle commande
@@ -345,5 +339,41 @@ class OrderModel
              LIMIT ?",
             [$startDate, $endDate, $limit]
         );
+    }
+    /**
+     * Obtenir les commandes du jour
+     */
+    public function getDailyOrders(): array
+    {
+        $date = date('Y-m-d');
+        return $this->db->query(
+            "SELECT o.*, rt.table_number 
+             FROM orders o
+             JOIN restaurant_tables rt ON o.table_id = rt.id
+             WHERE DATE(o.created_at) = ?
+             ORDER BY o.created_at DESC",
+            [$date]
+        );
+    }
+    
+    /**
+     * Stats du jour
+     */
+    public function getDailyStats(): array
+    {
+        return $this->getSalesStats(date('Y-m-d'), date('Y-m-d'));
+    }
+    
+    /**
+     * Marquer comme payé
+     */
+    public function markAsPaid(int $orderId, string $method): bool
+    {
+        return $this->db->update(
+            'orders', 
+            ['status' => 'paid', 'payment_status' => 'paid', 'payment_method' => $method, 'paid_at' => date('Y-m-d H:i:s')], 
+            'id = ?', 
+            [$orderId]
+        ) > 0;
     }
 }

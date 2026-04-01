@@ -7,12 +7,12 @@
  */
 
 return [
-    // Paramètres de connexion
-    'host'     => 'localhost',
-    'port'     => 3306,
-    'database' => 'sigr_restaurant',
-    'username' => 'root',
-    'password' => '',
+    // Paramètres de connexion (Priorité aux Variables d'Environnement)
+    'host'     => getenv('DB_HOST') ?: 'localhost',
+    'port'     => getenv('DB_PORT') ? (int)getenv('DB_PORT') : 3306,
+    'database' => getenv('DB_NAME') ?: 'sigr_restaurant',
+    'username' => getenv('DB_USER') ?: 'root',
+    'password' => getenv('DB_PASS') !== false ? getenv('DB_PASS') : '',
     'charset'  => 'utf8mb4',
     
     // Options PDO

@@ -57,10 +57,10 @@ ob_start();
     <div class="hero-overlay"></div>
     <div class="hero-content">
         <div class="hero-badge">
-            <i class="bi bi-stars"></i> Saveurs d'Afrique
+            <i class="bi bi-gem"></i> La Gastronomie Africaine
         </div>
-        <h1>Découvrez nos <span class="hero-highlight">Saveurs</span></h1>
-        <p>Des plats authentiques préparés avec passion et amour</p>
+        <h1>L'art des <span class="hero-highlight">Saveurs</span></h1>
+        <p>Une expérience culinaire délicate, préparée avec passion.</p>
         
         <!-- Search -->
         <div class="hero-search">
@@ -94,7 +94,7 @@ ob_start();
 <!-- Featured Section -->
 <section class="featured-section">
     <div class="section-header">
-        <h2><i class="bi bi-fire text-danger"></i> Populaires</h2>
+        <h2>Créations Signatures</h2>
         <span class="section-line"></span>
     </div>
     <div class="featured-scroll">
@@ -102,7 +102,7 @@ ob_start();
         <div class="featured-card">
             <div class="featured-img">
                 <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" alt="<?= e($product['name_fr'] ?? '') ?>">
-                <div class="featured-badge">⭐ Populaire</div>
+                <div class="featured-badge">Signature</div>
             </div>
             <div class="featured-info">
                 <h4><?= e($product['name_fr'] ?? $product['name'] ?? '') ?></h4>
@@ -131,8 +131,7 @@ ob_start();
 <section class="products-section">
     <div class="section-header">
         <h2>
-            <i class="bi bi-grid-3x3-gap"></i> 
-            <?= $selectedCategory ? e($categories[array_search($selectedCategory, array_column($categories, 'id'))]['name_fr'] ?? 'Catégorie') : 'Tout le menu' ?>
+            <?= $selectedCategory ? e($categories[array_search($selectedCategory, array_column($categories, 'id'))]['name_fr'] ?? 'Catégorie') : 'Notre Carte' ?>
         </h2>
         <span class="product-count"><?= count($products) ?> plat<?= count($products) > 1 ? 's' : '' ?></span>
     </div>
@@ -152,7 +151,7 @@ ob_start();
                     <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" 
                          alt="<?= e($product['name_fr'] ?? '') ?>" loading="lazy">
                     <?php if (!empty($product['is_featured'])): ?>
-                    <span class="prod-badge badge-hot">🔥 Populaire</span>
+                    <span class="prod-badge badge-hot">Signature</span>
                     <?php endif; ?>
                     <?php if (!empty($product['preparation_time'])): ?>
                     <span class="prod-badge badge-time">
@@ -177,12 +176,12 @@ ob_start();
                                 <input type="hidden" name="table" value="<?= e($tableNumber) ?>">
                                 <?php endif; ?>
                                 <button type="submit" class="add-btn">
-                                    <i class="bi bi-cart-plus"></i> Ajouter
+                                    Ajouter
                                 </button>
                             </form>
                             <?php else: ?>
                             <a href="<?= url('/') ?>" class="scan-btn">
-                                <i class="bi bi-qr-code"></i> Scanner
+                                Scanner à table
                             </a>
                             <?php endif; ?>
                         <?php else: ?>
@@ -205,7 +204,7 @@ ob_start();
             <i class="bi bi-cart3"></i>
             <span class="fc-badge"><?= $cartCount ?></span>
         </div>
-        <span class="fc-text">Voir le panier</span>
+        <span class="fc-text">Voir la sélection</span>
         <i class="bi bi-arrow-right"></i>
     </div>
 </a>

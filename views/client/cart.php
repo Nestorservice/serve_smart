@@ -23,8 +23,8 @@ ob_start();
     <!-- Liste des articles -->
     <div class="col-lg-8">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold mb-0">
-                <i class="bi bi-cart3 me-2" style="color: var(--primary)"></i>Mon Panier
+            <h2 class="fw-bold mb-0" style="font-family: 'Playfair Display', serif;">
+                Votre Sélection
             </h2>
             <?php if (!empty($cartItems)): ?>
             <form action="<?= url('client/cart/clear') ?>" method="POST">
@@ -32,8 +32,8 @@ ob_start();
                 <?php if ($tableNumber): ?>
                 <input type="hidden" name="table" value="<?= e($tableNumber) ?>">
                 <?php endif; ?>
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-trash me-1"></i> Vider le panier
+                <button type="submit" class="btn btn-outline-secondary btn-sm" style="border-radius:0;">
+                    Vider la sélection
                 </button>
             </form>
             <?php endif; ?>
@@ -46,9 +46,9 @@ ob_start();
                 <i class="bi bi-cart-x display-1" style="color: #ccc;"></i>
             </div>
             <h3 class="text-muted mb-3">Votre panier est vide</h3>
-            <p class="text-muted mb-4">Découvrez notre menu et ajoutez vos plats préférés</p>
-            <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . $tableNumber : '')) ?>" class="btn btn-primary btn-lg" style="background: var(--gradient); border: none; border-radius: 50px; padding: 1rem 2rem;">
-                <i class="bi bi-grid me-2"></i>Voir le menu
+            <p class="text-muted mb-4" style="font-family: 'Playfair Display', serif; font-style: italic;">Découvrez notre carte et ajoutez vos mets préférés</p>
+            <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . $tableNumber : '')) ?>" class="btn px-4 py-2" style="background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 0; text-transform: uppercase; letter-spacing: 1px;">
+                Explorer la Carte
             </a>
         </div>
         <?php else: ?>
@@ -59,8 +59,8 @@ ob_start();
                 <?php if (!empty($item['image_url'])): ?>
                 <img src="<?= url($item['image_url']) ?>" alt="<?= e($item['name']) ?>">
                 <?php else: ?>
-                <div class="d-flex align-items-center justify-content-center bg-light" style="width: 80px; height: 80px; border-radius: 12px;">
-                    <i class="bi bi-image text-muted fs-3"></i>
+                <div class="d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-light);">
+                    <i class="bi bi-image" style="color: var(--text-light); font-size: 1.5rem;"></i>
                 </div>
                 <?php endif; ?>
                 
@@ -103,8 +103,8 @@ ob_start();
                     <?php if ($tableNumber): ?>
                     <input type="hidden" name="table" value="<?= e($tableNumber) ?>">
                     <?php endif; ?>
-                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" style="width: 36px; height: 36px;">
-                        <i class="bi bi-x"></i>
+                    <button type="submit" class="btn btn-sm" style="color: var(--text-light); transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-light)'">
+                        <i class="bi bi-x-lg"></i>
                     </button>
                 </form>
             </div>
@@ -113,8 +113,8 @@ ob_start();
         
         <!-- Continuer les achats -->
         <div class="mt-4">
-            <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . $tableNumber : '')) ?>" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-left me-2"></i>Continuer les achats
+            <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . $tableNumber : '')) ?>" class="btn px-3 py-2" style="color: var(--text-light); text-decoration: none; border: 1px solid var(--border-light); font-size: 0.9rem; text-transform: uppercase;">
+                <i class="bi bi-arrow-left me-2"></i>Retour à la carte
             </a>
         </div>
         <?php endif; ?>
@@ -122,26 +122,23 @@ ob_start();
     
     <!-- Résumé de la commande -->
     <div class="col-lg-4">
-        <div class="card border-0 shadow-lg" style="border-radius: 20px; position: sticky; top: 100px;">
+        <div class="card border-0" style="background: var(--card-bg); border: 1px solid var(--border-light) !important; position: sticky; top: 100px;">
             <div class="card-body p-4">
-                <h4 class="fw-bold mb-4">
-                    <i class="bi bi-receipt me-2" style="color: var(--primary)"></i>Résumé
+                <h4 class="mb-4" style="font-family: 'Playfair Display', serif; font-style: italic; color: var(--primary);">
+                    L'Addition
                 </h4>
                 
                 <?php if ($tableNumber): ?>
-                <div class="d-flex align-items-center mb-3 p-3 rounded" style="background: rgba(102, 126, 234, 0.1);">
-                    <i class="bi bi-pin-map fs-4 me-2" style="color: var(--primary)"></i>
+                <div class="d-flex align-items-center mb-3 p-3 text-center justify-content-center" style="border-bottom: 1px solid var(--border-light);">
                     <div>
-                        <small class="text-muted d-block">Table</small>
-                        <strong><?= e($tableNumber) ?></strong>
+                        <small style="color: var(--text-light); text-transform: uppercase; letter-spacing: 2px;">Table</small><br>
+                        <strong style="color: var(--primary); font-size: 1.2rem; font-family: 'Playfair Display', serif;"><?= e($tableNumber) ?></strong>
                     </div>
                 </div>
                 <?php endif; ?>
                 
-                <hr>
-                
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Sous-total</span>
+                    <span style="color: var(--text-light);">Sous-total</span>
                     <span><?= Helpers::formatPrice($subtotal) ?></span>
                 </div>
                 
@@ -150,11 +147,9 @@ ob_start();
                     <span class="text-success">Gratuit</span>
                 </div>
                 
-                <hr>
-                
-                <div class="d-flex justify-content-between mb-4">
-                    <span class="fw-bold fs-5">Total</span>
-                    <span class="fw-bold fs-5" style="color: var(--primary)"><?= Helpers::formatPrice($subtotal) ?></span>
+                <div class="d-flex justify-content-between mb-4 border-top pt-3 mt-3" style="border-color: var(--border-light) !important;">
+                    <span class="fs-5" style="font-family: 'Playfair Display', serif;">Total</span>
+                    <span class="fs-5" style="color: var(--primary); font-family: 'Playfair Display', serif;"><?= Helpers::formatPrice($subtotal) ?></span>
                 </div>
                 
                 <?php if (!empty($cartItems)): ?>
@@ -164,27 +159,25 @@ ob_start();
                     <input type="hidden" name="table_number" value="<?= e($tableNumber) ?>">
                     <?php endif; ?>
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-bold"><i class="bi bi-chat-dots me-1"></i> Notes (optionnel)</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Allergies, préférences..."></textarea>
+                    <div class="mb-4">
+                        <label class="form-label" style="color: var(--text-light); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Requêtes Spéciales</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="Allergies, préférences..." style="background: transparent; border: 1px solid var(--border-light); color: var(--text);"></textarea>
                     </div>
                     
-                    <button type="submit" class="btn btn-lg w-100" style="background: var(--gradient); border: none; color: white; border-radius: 50px; padding: 1rem;">
-                        <i class="bi bi-check-circle me-2"></i>Passer la commande
+                    <button type="submit" class="btn w-100 py-3" style="background: var(--primary); color: var(--dark); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                        Confirmer la Commande
                     </button>
                 </form>
                 <?php else: ?>
-                <button class="btn btn-lg w-100 btn-secondary" disabled style="border-radius: 50px; padding: 1rem;">
-                    <i class="bi bi-cart me-2"></i>Panier vide
+                <button class="btn w-100 py-3 disabled" style="background: rgba(255,255,255,0.05); color: var(--text-light); border: 1px solid var(--border-light); text-transform: uppercase; letter-spacing: 1px;">
+                    Panier vide
                 </button>
                 <?php endif; ?>
             </div>
             
-            <!-- Badge sécurité -->
-            <div class="text-center py-3 border-top">
-                <small class="text-muted">
-                    <i class="bi bi-shield-check text-success me-1"></i>
-                    Paiement sur place
+            <div class="text-center py-3" style="border-top: 1px solid var(--border-light);">
+                <small style="color: var(--text-light); font-style: italic;">
+                    Règlement auprès du Maître d'Hôtel
                 </small>
             </div>
         </div>

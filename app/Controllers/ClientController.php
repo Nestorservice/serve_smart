@@ -14,7 +14,7 @@ use Models\ProductModel;
 use Models\OrderModel;
 use Models\TableModel;
 
-class ClientController
+class ClientController extends \Core\Controller
 {
     private Session $session;
     private CategoryModel $categoryModel;
@@ -42,7 +42,7 @@ class ClientController
         
         if (!$table) {
             // Table invalide
-            Helpers::render('errors/invalid-table', [
+            $this->render('errors/invalid-table', [
                 'message' => Helpers::__('errors.invalid_table')
             ]);
             return;
@@ -85,7 +85,7 @@ class ClientController
             $products = $this->productModel->getAll();
         }
         
-        Helpers::render('client/menu', [
+        $this->render('client/menu', [
             'categories' => $categories,
             'products' => $products,
             'featured' => $featured,
@@ -120,7 +120,7 @@ class ClientController
         $products = $this->productModel->getByCategory((int) $categoryId);
         $lang = $this->session->getLanguage();
         
-        Helpers::render('client/category', [
+        $this->render('client/category', [
             'category' => $category,
             'products' => $products,
             'tableNumber' => $tableSession['table_number'],
@@ -151,7 +151,7 @@ class ClientController
         
         $lang = $this->session->getLanguage();
         
-        Helpers::render('client/product', [
+        $this->render('client/product', [
             'product' => $product,
             'tableNumber' => $tableSession['table_number'],
             'lang' => $lang,
@@ -175,7 +175,7 @@ class ClientController
         $cart = $this->getCart();
         $cartItems = $this->enrichCartItems($cart);
         
-        Helpers::render('client/cart', [
+        $this->render('client/cart', [
             'cartItems' => $cartItems,
             'tableNumber' => $tableSession['table_number'],
             'lang' => $this->session->getLanguage()
@@ -197,7 +197,7 @@ class ClientController
             Helpers::jsonError('Session expirée', 401);
         }
         
-        $data = Helpers::isAjax() ? Helpers::getJsonInput() : $_POST;
+        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
         
         $productId = (int) ($data['product_id'] ?? 0);
         $quantity = max(1, (int) ($data['quantity'] ?? 1));
@@ -247,7 +247,7 @@ class ClientController
             Helpers::jsonError('Token CSRF invalide', 403);
         }
         
-        $data = Helpers::isAjax() ? Helpers::getJsonInput() : $_POST;
+        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
         
         $key = $data['key'] ?? '';
         $quantity = max(0, (int) ($data['quantity'] ?? 0));
@@ -279,7 +279,7 @@ class ClientController
             Helpers::jsonError('Token CSRF invalide', 403);
         }
         
-        $data = Helpers::isAjax() ? Helpers::getJsonInput() : $_POST;
+        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
         $key = $data['key'] ?? '';
         
         $cart = $this->getCart();
@@ -316,7 +316,7 @@ class ClientController
             Helpers::jsonError('Panier vide', 400);
         }
         
-        $data = Helpers::isAjax() ? Helpers::getJsonInput() : $_POST;
+        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
         $notes = Helpers::sanitize($data['notes'] ?? '');
         
         // Vérifier la disponibilité de tous les produits
@@ -377,7 +377,7 @@ class ClientController
             exit;
         }
         
-        Helpers::render('client/order-tracking', [
+        $this->render('client/order-tracking', [
             'order' => $order,
             'tableNumber' => $tableSession['table_number'],
             'lang' => $this->session->getLanguage()
@@ -404,7 +404,7 @@ class ClientController
             exit;
         }
         
-        Helpers::render('client/payment', [
+        $this->render('client/payment', [
             'order' => $order,
             'tableNumber' => $tableSession['table_number'],
             'lang' => $this->session->getLanguage()
@@ -426,7 +426,7 @@ class ClientController
             Helpers::jsonError('Session expirée', 401);
         }
         
-        $data = Helpers::isAjax() ? Helpers::getJsonInput() : $_POST;
+        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
         $orderId = (int) ($data['order_id'] ?? 0);
         $method = $data['method'] ?? 'cash';
         
@@ -445,9 +445,25 @@ class ClientController
         }
         
         // TODO: Intégration Mobile Money (Orange, MTN, Moov)
-        // Pour l'instant, marquer comme en attente
+        // Pour l'instant, on lance une simulation réussie
+        
+        $paymentModel = new \Models\PaymentModel();
+        $ref = 'SIM_' . strtoupper($method) . '_' . time();
+        
+        $paymentModel->create([
+            'order_id' => $orderId,
+            'amount' => $order['total_amount'],
+            'method' => $method,
+            'transaction_ref' => $ref,
+            'status' => 'completed',
+            'phone_number' => $data['phone'] ?? null
+        ]);
+        
+        $this->orderModel->markAsPaid($orderId, $method);
+        
         Helpers::jsonSuccess([
-            'message' => Helpers::__('payment.payment_pending')
+            'message' => Helpers::__('payment.payment_successful'),
+            'transaction_ref' => $ref
         ]);
     }
     

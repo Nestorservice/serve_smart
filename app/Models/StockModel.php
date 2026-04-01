@@ -7,14 +7,8 @@ namespace Models;
 
 use Core\Database;
 
-class StockModel
+class StockModel extends \Core\Model
 {
-    private Database $db;
-    
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
     
     /**
      * Obtenir le stock d'un produit

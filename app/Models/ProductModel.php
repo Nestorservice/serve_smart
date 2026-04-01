@@ -7,14 +7,8 @@ namespace Models;
 
 use Core\Database;
 
-class ProductModel
+class ProductModel extends \Core\Model
 {
-    private Database $db;
-    
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
     
     /**
      * Obtenir tous les produits disponibles

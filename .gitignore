@@ -1,0 +1,5 @@
+.env
+*.sql
+import_db.php
+refactor_*.php
+/public/assets/images/uploads/*

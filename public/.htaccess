@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Rediriger vers HTTPS si nécessaire (décommenter en production)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Vérifier si le fichier ou dossier n'existe pas
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Tout renvoyer sur index.php
+    RewriteRule ^(.*)$ index.php/$1 [L]
+</IfModule>

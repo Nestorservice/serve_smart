@@ -12,7 +12,7 @@ use Core\Helpers;
 use Models\OrderModel;
 use Models\UserModel;
 
-class KitchenController
+class KitchenController extends \Core\Controller
 {
     private Session $session;
     private OrderModel $orderModel;
@@ -41,7 +41,7 @@ class KitchenController
         $confirmed = array_filter($orders, fn($o) => $o['status'] === 'confirmed');
         $preparing = array_filter($orders, fn($o) => $o['status'] === 'preparing');
         
-        Helpers::render('kitchen/display', [
+        $this->render('kitchen/display', [
             'confirmedOrders' => $confirmed,
             'preparingOrders' => $preparing,
             'staffName' => $this->session->getStaffName()
@@ -59,7 +59,7 @@ class KitchenController
             exit;
         }
         
-        Helpers::render('kitchen/login', [
+        $this->render('kitchen/login', [
             'error' => $this->session->getFlash('error')
         ]);
     }

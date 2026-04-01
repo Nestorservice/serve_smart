@@ -6,7 +6,7 @@
  */
 
 // Charger la configuration
-require_once __DIR__ . '/app/Config/config.php';
+require_once dirname(__DIR__) . '/app/Config/config.php';
 
 // Charger les helpers globaux
 require_once APP_PATH . '/Core/Helpers.php';

@@ -1,0 +1,8 @@
+{
+    "name": "nestorservice/serve_smart",
+    "description": "Serve Smart Restaurant Management System",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    }
+}

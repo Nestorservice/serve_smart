@@ -13,7 +13,7 @@ use Models\CategoryModel;
 use Models\ProductModel;
 use Models\OrderModel;
 
-class ApiController
+class ApiController extends \Core\Controller
 {
     private Session $session;
     private CategoryModel $categoryModel;
@@ -100,7 +100,7 @@ class ApiController
             Helpers::jsonError('Session expirée', 401);
         }
         
-        $data = Helpers::getJsonInput();
+        $data = $this->getJsonInput();
         $action = $data['action'] ?? '';
         
         switch ($action) {
@@ -255,6 +255,9 @@ class ApiController
         $timeout = POLLING_TIMEOUT;
         $start = time();
         
+        // Libérer la session pour permettre d'autres requêtes concurrentes !
+        session_write_close();
+        
         while (time() - $start < $timeout) {
             $newOrders = $this->orderModel->getNewOrdersSince($since);
             
@@ -281,7 +284,7 @@ class ApiController
                 ]);
             }
             
-            usleep(POLLING_INTERVAL);
+            sleep(2); // Spécifié par le rapport : sleep(2) en boucle
         }
         
         // Timeout sans nouvelles commandes
@@ -301,7 +304,7 @@ class ApiController
             Helpers::jsonError('Accès interdit', 403);
         }
         
-        $data = Helpers::getJsonInput();
+        $data = $this->getJsonInput();
         $status = $data['status'] ?? '';
         
         if ($this->orderModel->updateStatus((int) $orderId, $status)) {
@@ -337,7 +340,7 @@ class ApiController
      */
     public function setLanguage(): void
     {
-        $data = Helpers::getJsonInput();
+        $data = $this->getJsonInput();
         $lang = $data['lang'] ?? DEFAULT_LANGUAGE;
         
         if (in_array($lang, SUPPORTED_LANGUAGES)) {

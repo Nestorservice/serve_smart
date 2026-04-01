@@ -7,14 +7,8 @@ namespace Models;
 
 use Core\Database;
 
-class TableModel
+class TableModel extends \Core\Model
 {
-    private Database $db;
-    
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
     
     /**
      * Obtenir toutes les tables

@@ -16,8 +16,8 @@ define('VIEWS_PATH', ROOT_PATH . '/views');
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('LANG_PATH', ROOT_PATH . '/lang');
 
-// URL de base (à adapter selon votre configuration)
-define('BASE_URL', '/serve_smart');
+// URL de base dynamique
+define('BASE_URL', getenv('APP_URL') !== false ? getenv('APP_URL') : '/serve_smart');
 define('ASSETS_URL', BASE_URL . '/public/assets');
 
 // Configuration session client

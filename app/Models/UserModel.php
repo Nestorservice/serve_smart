@@ -8,14 +8,8 @@ namespace Models;
 use Core\Database;
 use Core\Helpers;
 
-class UserModel
+class UserModel extends \Core\Model
 {
-    private Database $db;
-    
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
     
     /**
      * Obtenir un utilisateur par ID
