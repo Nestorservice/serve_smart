@@ -33,9 +33,14 @@ define('ASSETS_URL', BASE_URL . '/public/assets');
 // Configuration session client
 define('SESSION_NAME', 'SIGR_SESSION');
 define('SESSION_LIFETIME', 10800); // 3 heures en secondes
-define('SESSION_COOKIE_SECURE', $isProduction); // true en production HTTPS
+
+// Détection HTTPS pour les cookies sécurisés
+$isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+           (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+define('SESSION_COOKIE_SECURE', $isProduction || $isHttps);
 define('SESSION_COOKIE_HTTPONLY', true);
-define('SESSION_COOKIE_SAMESITE', 'Strict');
+define('SESSION_COOKIE_SAMESITE', 'Lax');
 
 // Configuration sécurité
 define('CSRF_TOKEN_NAME', 'csrf_token');
