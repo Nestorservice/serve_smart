@@ -103,6 +103,7 @@ class Database
      */
     public function execute(string $sql, array $params = []): int
     {
+        $params = $this->prepareParams($params);
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->rowCount();
@@ -117,6 +118,7 @@ class Database
      */
     public function query(string $sql, array $params = []): array
     {
+        $params = $this->prepareParams($params);
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -131,6 +133,7 @@ class Database
      */
     public function queryOne(string $sql, array $params = []): ?array
     {
+        $params = $this->prepareParams($params);
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         $result = $stmt->fetch();
@@ -146,6 +149,7 @@ class Database
      */
     public function queryValue(string $sql, array $params = []): mixed
     {
+        $params = $this->prepareParams($params);
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchColumn();
@@ -279,5 +283,18 @@ class Database
     public function quoteIdentifier(string $identifier): string
     {
         return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
+    /**
+     * Préparer les paramètres pour PDO (conversion booléens et dates)
+     */
+    private function prepareParams(array $params): array
+    {
+        foreach ($params as $key => $value) {
+            if (is_bool($value)) {
+                $params[$key] = $value ? 1 : 0;
+            }
+        }
+        return $params;
     }
 }
