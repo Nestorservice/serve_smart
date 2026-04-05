@@ -659,20 +659,26 @@ class AdminController extends \Core\Controller
             return null;
         }
         
-        // Generate unique name
+        // --- PROD FEATURE: CLOUDINARY UPLOAD ---
+        $cloudinary = new \Core\Cloudinary();
+        if ($cloudinary->isConfigured()) {
+            $cloudUrl = $cloudinary->upload($file['tmp_name']);
+            if ($cloudUrl) {
+                return $cloudUrl; // Full https URL
+            }
+        }
+        
+        // FALLBACK: LOCAL UPLOAD (for XAMPP or if Cloudinary fails)
         $ext = Helpers::getFileExtension($file['name']);
         $filename = Helpers::uniqueFilename($ext);
         
-        // Create directory if needed
         $uploadDir = UPLOAD_PATH;
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
         
-        // Move file
         $destination = $uploadDir . '/' . $filename;
         if (move_uploaded_file($file['tmp_name'], $destination)) {
-            // Return path relative to project root (to be used with url() helper)
             return 'public/assets/images/uploads/' . $filename;
         }
         

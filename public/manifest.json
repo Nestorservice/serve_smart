@@ -1,0 +1,16 @@
+{
+  "name": "SIGR Restaurant - African Flavors",
+  "short_name": "SIGR",
+  "start_url": "client/menu",
+  "display": "standalone",
+  "background_color": "#1a1c23",
+  "theme_color": "#ff9f1c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/images/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

@@ -10,19 +10,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <meta name="theme-color" content="#1a1c22">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= url('public/assets/images/favicon.png') ?>">
-    
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- PWA & Mobile Optimization -->
+    <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SIGR">
     
     <style>
         :root {
@@ -50,6 +42,7 @@
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
         /* Generic utilities */
@@ -144,7 +137,7 @@
         /* Layout structure */
         .app-layout {
             display: flex;
-            height: calc(100vh - 76px); /* subtract header */
+            height: calc(100vh - 76px - 70px); /* subtract header and bottom nav */
             overflow: hidden;
             padding: 0 1rem 1rem 1rem;
             gap: 20px;
@@ -171,18 +164,55 @@
             overflow: hidden;
         }
 
-        /* Responsive Breakpoints */
-        @media (max-width: 991px) {
-            .app-layout { flex-direction: column; height: auto; overflow: visible; }
-            .sidebar-cart { width: 100%; height: 500px; margin-top: 20px; }
-            .main-content { height: auto; overflow: visible; padding: 10px; }
-            .header-search { display: none; }
+        /* BOTTOM NAVIGATION (Mobile) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: none;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1050;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        @media (max-width: 576px) {
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        .nav-item.active {
+            color: var(--primary-orange);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 991px) {
+            .app-layout { 
+                flex-direction: column; 
+                height: auto; 
+                margin-bottom: 80px; /* space for bottom nav */
+                padding-bottom: 30px;
+            }
+            .sidebar-cart { display: none; } /* On mobile we use dedicated cart page or modal */
+            .main-content { height: auto; overflow: visible; padding: 10px; border: none; background: transparent; }
+            .header-search { display: none; }
+            .bottom-nav { display: flex; }
             .app-header { padding: 1rem; }
-            .sidebar-cart { border-radius: 0; border: none; height: auto; min-height: 400px; }
-            .main-content { border-radius: 0; border: none; background: transparent; }
         }
     </style>
 </head>
@@ -205,23 +235,46 @@
                     <i class="bi bi-geo-alt-fill me-1"></i> Table <?= e($tableNumber) ?>
                 </div>
             <?php endif; ?>
-            <a href="<?= url('client/order-tracking') ?>" class="action-btn" title="Track Order">
+            <a href="<?= url('client/order-tracking') ?>" class="action-btn d-none d-lg-flex" title="Track Order">
                 <i class="bi bi-bell"></i>
             </a>
-            <a href="<?= url('client/cart') ?>" class="action-btn d-lg-none" title="Cart">
-                <i class="bi bi-bag"></i>
+            <a href="<?= url('admin/login') ?>" class="action-btn" title="Admin">
+                <i class="bi bi-person-circle"></i>
             </a>
         </div>
     </header>
 
     <?= $content ?? '' ?>
 
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="<?= url('client/menu') ?>" class="nav-item <?= ($currentPage ?? '') === 'menu' ? 'active' : '' ?>">
+            <i class="bi bi-grid"></i>
+            <span>Menu</span>
+        </a>
+        <a href="<?= url('client/cart') ?>" class="nav-item <?= ($currentPage ?? '') === 'cart' ? 'active' : '' ?>">
+            <div class="position-relative">
+                <i class="bi bi-bag"></i>
+                <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; padding: 0.25em 0.5em;">
+                    <?= array_sum(array_column($_SESSION['cart'], 'quantity')) ?>
+                </span>
+                <?php endif; ?>
+            </div>
+            <span>Cart</span>
+        </a>
+        <a href="<?= url('client/order-tracking') ?>" class="nav-item <?= ($currentPage ?? '') === 'orders' ? 'active' : '' ?>">
+            <i class="bi bi-clock-history"></i>
+            <span>Orders</span>
+        </a>
+    </nav>
+
     <!-- Flash Messages (Overlays nicely) -->
     <?php 
     $session = \Core\Session::getInstance();
     if ($session->hasFlash()): 
     ?>
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2000; margin-bottom: 75px;">
         <?php foreach (['success', 'danger', 'info', 'warning'] as $type): ?>
             <?php foreach ($session->getFlash($type) as $msg): ?>
             <div class="toast align-items-center text-white bg-<?= $type === 'danger' ? 'danger' : ($type === 'success' ? 'success' : 'primary') ?> border-0 mb-2 show" role="alert" style="border-radius: var(--radius-md);">
@@ -239,6 +292,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('<?= BASE_URL ?>/public/sw.js')
+                .then(reg => console.log('SW Registered'))
+                .catch(err => console.log('SW Error:', err));
+            });
+        }
+
         // Auto-close toasts
         document.querySelectorAll('.toast').forEach(t => {
             setTimeout(() => {

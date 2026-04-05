@@ -33,6 +33,10 @@ class Helpers
      */
     public static function url(string $path = ''): string
     {
+        // If path is already an absolute URL, return it
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
         return BASE_URL . '/' . ltrim($path, '/');
     }
     
@@ -198,6 +202,7 @@ class Helpers
             $settings = [];
             foreach ($rows as $row) {
                 $value = $row['setting_value'];
+                
                 
                 // Convert according to type
                 switch ($row['setting_type']) {

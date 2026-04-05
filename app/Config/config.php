@@ -18,7 +18,16 @@ define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('LANG_PATH', ROOT_PATH . '/lang');
 
 // URL de base dynamique
-define('BASE_URL', getenv('APP_URL') !== false ? getenv('APP_URL') : '/serve_smart');
+// Si APP_URL est défini, on l'utilise, sinon on détecte si on est à la racine ou dans /serve_smart
+if (getenv('APP_URL')) {
+    define('BASE_URL', rtrim(getenv('APP_URL'), '/'));
+} else {
+    // Détection auto du dossier (utile pour XAMPP vs Render)
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $baseDir = str_replace(['/public/index.php', '/index.php'], '', $scriptName);
+    define('BASE_URL', $baseDir ?: '');
+}
+
 define('ASSETS_URL', BASE_URL . '/public/assets');
 
 // Configuration session client
