@@ -5,10 +5,10 @@
 
 use Core\Helpers;
 
-$pageTitle = 'Bienvenue';
+$pageTitle = 'Welcome';
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <title><?= e($pageTitle) ?> - SIGR Restaurant</title>
     <meta charset="utf-8">
@@ -235,12 +235,12 @@ $pageTitle = 'Bienvenue';
                         <i class="bi bi-cup-hot-fill me-3"></i>SIGR Restaurant
                     </h1>
                     <p class="hero-subtitle mb-5">
-                        Système Intelligent de Gestion de Restaurant
-                        <br>Commandez facilement depuis votre table
+                        Intelligent Restaurant Management System
+                        <br>Order easily from your table
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
                         <a href="<?= url('client/menu') ?>" class="btn btn-hero btn-hero-primary">
-                            <i class="bi bi-grid me-2"></i>Voir le Menu
+                            <i class="bi bi-grid me-2"></i>View Menu
                         </a>
                         <a href="<?= url('admin/login') ?>" class="btn btn-hero btn-hero-outline">
                             <i class="bi bi-person-circle me-2"></i>Administration
@@ -260,8 +260,8 @@ $pageTitle = 'Bienvenue';
     <section class="features-section">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="fw-bold mb-3">Pourquoi choisir SIGR ?</h2>
-                <p class="text-muted lead">Une solution complète pour moderniser votre restaurant</p>
+                <h2 class="fw-bold mb-3">Why Choose SIGR?</h2>
+                <p class="text-muted lead">A complete solution to modernize your restaurant</p>
             </div>
             
             <div class="row g-4">
@@ -270,8 +270,8 @@ $pageTitle = 'Bienvenue';
                         <div class="feature-icon">
                             <i class="bi bi-qr-code-scan"></i>
                         </div>
-                        <h4>Commande par QR Code</h4>
-                        <p>Vos clients scannent le code sur leur table et commandent directement depuis leur téléphone.</p>
+                        <h4>QR Code Ordering</h4>
+                        <p>Your customers scan the code on their table and order directly from their phone.</p>
                     </div>
                 </div>
                 
@@ -280,8 +280,8 @@ $pageTitle = 'Bienvenue';
                         <div class="feature-icon">
                             <i class="bi bi-display"></i>
                         </div>
-                        <h4>Écran Cuisine</h4>
-                        <p>Les cuisiniers voient les commandes en temps réel et peuvent les traiter efficacement.</p>
+                        <h4>Kitchen Screen</h4>
+                        <p>Cooks see orders in real-time and can process them efficiently.</p>
                     </div>
                 </div>
                 
@@ -290,8 +290,8 @@ $pageTitle = 'Bienvenue';
                         <div class="feature-icon">
                             <i class="bi bi-graph-up-arrow"></i>
                         </div>
-                        <h4>Statistiques</h4>
-                        <p>Suivez vos ventes, identifiez vos produits populaires et optimisez votre activité.</p>
+                        <h4>Statistics</h4>
+                        <p>Track your sales, identify your popular products and optimize your business.</p>
                     </div>
                 </div>
                 
@@ -300,8 +300,8 @@ $pageTitle = 'Bienvenue';
                         <div class="feature-icon">
                             <i class="bi bi-box-seam"></i>
                         </div>
-                        <h4>Gestion des Stocks</h4>
-                        <p>Gardez un œil sur vos stocks et recevez des alertes quand ils sont bas.</p>
+                        <h4>Stock Management</h4>
+                        <p>Keep an eye on your stocks and receive alerts when they are low.</p>
                     </div>
                 </div>
                 
@@ -310,8 +310,8 @@ $pageTitle = 'Bienvenue';
                         <div class="feature-icon">
                             <i class="bi bi-geo-alt"></i>
                         </div>
-                        <h4>Suivi en Temps Réel</h4>
-                        <p>Les clients peuvent suivre l'avancement de leur commande en direct.</p>
+                        <h4>Real-time Tracking</h4>
+                        <p>Customers can track their order progress live.</p>
                     </div>
                 </div>
                 
@@ -321,7 +321,7 @@ $pageTitle = 'Bienvenue';
                             <i class="bi bi-phone"></i>
                         </div>
                         <h4>100% Responsive</h4>
-                        <p>Interface adaptée à tous les appareils : smartphones, tablettes, ordinateurs.</p>
+                        <p>Interface adapted to all devices: smartphones, tablets, computers.</p>
                     </div>
                 </div>
             </div>
@@ -332,25 +332,25 @@ $pageTitle = 'Bienvenue';
     <section class="how-section">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="fw-bold mb-3">Comment ça marche ?</h2>
-                <p class="text-muted lead">3 étapes simples pour commander</p>
+                <h2 class="fw-bold mb-3">How it works?</h2>
+                <p class="text-muted lead">3 simple steps to order</p>
             </div>
             
             <div class="row g-4 text-center">
                 <div class="col-md-4">
                     <div class="step-number">1</div>
-                    <h5 class="fw-bold">Scannez le QR Code</h5>
-                    <p class="text-muted">Utilisez l'appareil photo de votre téléphone pour scanner le code sur votre table.</p>
+                    <h5 class="fw-bold">Scan the QR Code</h5>
+                    <p class="text-muted">Use your phone's camera to scan the code on your table.</p>
                 </div>
                 <div class="col-md-4">
                     <div class="step-number">2</div>
-                    <h5 class="fw-bold">Choisissez vos plats</h5>
-                    <p class="text-muted">Parcourez notre menu et ajoutez vos plats préférés au panier.</p>
+                    <h5 class="fw-bold">Choose your dishes</h5>
+                    <p class="text-muted">Browse our menu and add your favorite dishes to the cart.</p>
                 </div>
                 <div class="col-md-4">
                     <div class="step-number">3</div>
-                    <h5 class="fw-bold">Validez et savourez</h5>
-                    <p class="text-muted">Confirmez votre commande et suivez sa préparation en temps réel.</p>
+                    <h5 class="fw-bold">Confirm and enjoy</h5>
+                    <p class="text-muted">Confirm your order and follow its preparation in real-time.</p>
                 </div>
             </div>
         </div>
@@ -359,10 +359,10 @@ $pageTitle = 'Bienvenue';
     <!-- CTA Section -->
     <section class="cta-section">
         <div class="container">
-            <h2>Prêt à commander ?</h2>
-            <p>Découvrez nos délicieux plats préparés avec amour</p>
+            <h2>Ready to order?</h2>
+            <p>Discover our delicious dishes prepared with love</p>
             <a href="<?= url('client/menu') ?>" class="btn btn-hero btn-hero-primary">
-                <i class="bi bi-grid me-2"></i>Voir le Menu
+                <i class="bi bi-grid me-2"></i>View Menu
             </a>
         </div>
     </section>
@@ -373,11 +373,11 @@ $pageTitle = 'Bienvenue';
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
                     <h5 class="mb-1"><i class="bi bi-cup-hot-fill me-2"></i>SIGR Restaurant</h5>
-                    <small class="opacity-75">© <?= date('Y') ?> Tous droits réservés</small>
+                    <small class="opacity-75">© <?= date('Y') ?> All rights reserved</small>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <a href="<?= url('admin/login') ?>" class="me-3"><i class="bi bi-person-circle me-1"></i>Admin</a>
-                    <a href="<?= url('kitchen') ?>" class="me-3"><i class="bi bi-display me-1"></i>Cuisine</a>
+                    <a href="<?= url('kitchen') ?>" class="me-3"><i class="bi bi-display me-1"></i>Kitchen</a>
                 </div>
             </div>
         </div>

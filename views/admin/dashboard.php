@@ -16,18 +16,19 @@ $weeklySales = $weeklySales ?? [];
 $orderStats = $orderStats ?? ['pending' => 0, 'preparing' => 0, 'ready' => 0, 'served' => 0];
 
 // Configuration du layout
-$pageTitle = 'Tableau de bord';
+// Configuration du layout
+$pageTitle = 'Dashboard';
 $currentPage = 'dashboard';
 ob_start();
 ?>
 
 <div class="row">
-    <!-- Statistiques Cards avec icônes stylisées -->
+    <!-- Statistiques Cards with stylized icons -->
     <div class="col-xl-3 col-sm-6">
         <div class="card gradient-1 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Ventes du jour</span>
+                    <span class="fs-16 font-w600">Today's Sales</span>
                     <h2 class="text-white font-w600"><?= Helpers::formatPrice($todaySales) ?></h2>
                 </div>
                 <div class="text-white">
@@ -43,7 +44,7 @@ ob_start();
         <div class="card gradient-2 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Commandes totales</span>
+                    <span class="fs-16 font-w600">Total Orders</span>
                     <h2 class="text-white font-w600"><?= $totalOrders ?></h2>
                 </div>
                 <div class="text-white">
@@ -59,7 +60,7 @@ ob_start();
         <div class="card gradient-3 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">En attente</span>
+                    <span class="fs-16 font-w600">Pending Orders</span>
                     <h2 class="text-white font-w600"><?= $pendingOrders ?></h2>
                 </div>
                 <div class="text-white">
@@ -76,7 +77,7 @@ ob_start();
         <div class="card gradient-4 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Stock bas</span>
+                    <span class="fs-16 font-w600">Low Stock</span>
                     <h2 class="text-white font-w600"><?= $lowStockCount ?></h2>
                 </div>
                 <div class="text-white">
@@ -96,11 +97,11 @@ ob_start();
         <div class="card">
             <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-bar-chart me-2 text-primary"></i>Ventes de la semaine
+                    <i class="bi bi-bar-chart me-2 text-primary"></i>Weekly Sales
                 </h4>
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Cette semaine
+                        This Week
                     </button>
                 </div>
             </div>
@@ -115,23 +116,23 @@ ob_start();
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-pie-chart me-2 text-primary"></i>Statuts des commandes
+                    <i class="bi bi-pie-chart me-2 text-primary"></i>Order Statuses
                 </h4>
             </div>
             <div class="card-body">
                 <canvas id="orderStatusChart" height="200"></canvas>
                 <div class="row mt-4">
                     <div class="col-6">
-                        <span class="badge bg-warning me-2">&nbsp;</span> En attente: <?= $orderStats['pending'] ?>
+                        <span class="badge bg-warning me-2">&nbsp;</span> Pending: <?= $orderStats['pending'] ?>
                     </div>
                     <div class="col-6">
-                        <span class="badge bg-primary me-2">&nbsp;</span> Préparation: <?= $orderStats['preparing'] ?>
+                        <span class="badge bg-primary me-2">&nbsp;</span> Preparing: <?= $orderStats['preparing'] ?>
                     </div>
                     <div class="col-6 mt-2">
-                        <span class="badge bg-success me-2">&nbsp;</span> Prêtes: <?= $orderStats['ready'] ?>
+                        <span class="badge bg-success me-2">&nbsp;</span> Ready: <?= $orderStats['ready'] ?>
                     </div>
                     <div class="col-6 mt-2">
-                        <span class="badge bg-secondary me-2">&nbsp;</span> Servies: <?= $orderStats['served'] ?>
+                        <span class="badge bg-secondary me-2">&nbsp;</span> Served: <?= $orderStats['served'] ?>
                     </div>
                 </div>
             </div>
@@ -145,10 +146,10 @@ ob_start();
         <div class="card">
             <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-receipt me-2 text-primary"></i>Commandes récentes
+                    <i class="bi bi-receipt me-2 text-primary"></i>Recent Orders
                 </h4>
                 <a href="<?= url('admin/orders') ?>" class="btn btn-primary btn-sm">
-                    <i class="bi bi-eye me-1"></i>Voir tout
+                    <i class="bi bi-eye me-1"></i>View all
                 </a>
             </div>
             <div class="card-body">
@@ -156,10 +157,10 @@ ob_start();
                     <table class="table table-responsive-md table-hover">
                         <thead>
                             <tr>
-                                <th>N° Commande</th>
+                                <th>Order No.</th>
                                 <th>Table</th>
-                                <th>Montant</th>
-                                <th>Statut</th>
+                                <th>Amount</th>
+                                <th>Status</th>
                                 <th>Date</th>
                                 <th></th>
                             </tr>
@@ -169,7 +170,7 @@ ob_start();
                             <tr>
                                 <td colspan="6" class="text-center text-muted py-5">
                                     <i class="bi bi-inbox display-4 d-block mb-3"></i>
-                                    Aucune commande récente
+                                    No recent orders
                                 </td>
                             </tr>
                             <?php else: ?>
@@ -190,18 +191,18 @@ ob_start();
                                         default => 'dark'
                                     };
                                     $statusLabel = match($order['status'] ?? 'pending') {
-                                        'pending' => 'En attente',
-                                        'confirmed' => 'Confirmée',
-                                        'preparing' => 'En préparation',
-                                        'ready' => 'Prête',
-                                        'served' => 'Servie',
-                                        'cancelled' => 'Annulée',
+                                        'pending' => 'Pending',
+                                        'confirmed' => 'Confirmed',
+                                        'preparing' => 'Preparing',
+                                        'ready' => 'Ready',
+                                        'served' => 'Served',
+                                        'cancelled' => 'Cancelled',
                                         default => $order['status']
                                     };
                                     ?>
                                     <span class="badge badge-<?= $statusClass ?> badge-lg"><?= $statusLabel ?></span>
                                 </td>
-                                <td><?= Helpers::formatDate($order['created_at'] ?? 'now', 'd/m H:i') ?></td>
+                                <td><?= Helpers::formatDate($order['created_at'] ?? 'now', 'm/d H:i') ?></td>
                                 <td>
                                     <a href="<?= url('admin/orders/' . $order['id']) ?>" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-eye"></i>
@@ -223,22 +224,22 @@ ob_start();
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-lightning me-2 text-primary"></i>Actions rapides
+                    <i class="bi bi-lightning me-2 text-primary"></i>Quick Actions
                 </h4>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
                     <a href="<?= url('admin/menu/add') ?>" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-2"></i>Ajouter un produit
+                        <i class="bi bi-plus-circle me-2"></i>Add Product
                     </a>
                     <a href="<?= url('admin/tables') ?>" class="btn btn-success">
-                        <i class="bi bi-qr-code me-2"></i>Gérer les tables
+                        <i class="bi bi-qr-code me-2"></i>Manage Tables
                     </a>
                     <a href="<?= url('admin/stock') ?>" class="btn btn-warning text-white">
-                        <i class="bi bi-box-seam me-2"></i>Voir les stocks
+                        <i class="bi bi-box-seam me-2"></i>View Stocks
                     </a>
                     <a href="<?= url('kitchen') ?>" target="_blank" class="btn btn-info text-white">
-                        <i class="bi bi-display me-2"></i>Écran Cuisine
+                        <i class="bi bi-display me-2"></i>Kitchen Screen
                     </a>
                 </div>
             </div>
@@ -248,14 +249,14 @@ ob_start();
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-star me-2 text-primary"></i>Top Produits
+                    <i class="bi bi-star me-2 text-primary"></i>Top Products
                 </h4>
             </div>
             <div class="card-body">
                 <?php if (empty($popularProducts)): ?>
                 <p class="text-muted text-center py-4">
                     <i class="bi bi-basket display-4 d-block mb-2"></i>
-                    Aucune donnée
+                    No data
                 </p>
                 <?php else: ?>
                 <ul class="list-group list-group-flush">
@@ -263,9 +264,9 @@ ob_start();
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                         <div class="d-flex align-items-center">
                             <span class="badge bg-primary rounded-circle me-3"><?= $index + 1 ?></span>
-                            <span><?= e($product['name_fr'] ?? $product['name'] ?? 'Produit') ?></span>
+                            <span><?= e(!empty($product['name_en']) ? $product['name_en'] : ($product['name_fr'] ?? $product['name'] ?? 'Product')) ?></span>
                         </div>
-                        <span class="badge bg-success rounded-pill"><?= $product['order_count'] ?? 0 ?> vendus</span>
+                        <span class="badge bg-success rounded-pill"><?= $product['total_sold'] ?? $product['order_count'] ?? 0 ?> sold</span>
                     </li>
                     <?php endforeach; ?>
                 </ul>
@@ -301,9 +302,9 @@ if (salesCtx) {
     new Chart(salesCtx, {
         type: 'bar',
         data: {
-            labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             datasets: [{
-                label: 'Ventes (FCFA)',
+                label: 'Sales (FCFA)',
                 data: weeklySales,
                 backgroundColor: 'rgba(102, 126, 234, 0.8)',
                 borderColor: 'rgba(102, 126, 234, 1)',
@@ -336,7 +337,7 @@ if (statusCtx) {
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
-            labels: ['En attente', 'En préparation', 'Prêtes', 'Servies'],
+            labels: ['Pending', 'Preparing', 'Ready', 'Served'],
             datasets: [{
                 data: orderStats,
                 backgroundColor: [

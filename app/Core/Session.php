@@ -93,6 +93,12 @@ class Session
         // Stocker le token dans un cookie sécurisé
         $this->setTableSessionCookie($token);
         
+        // Injecter le cookie pour la requête courante
+        $_COOKIE['table_session'] = $token;
+        
+        // Nettoyer le cache local
+        $this->tableSession = null;
+        
         return $token;
     }
     
@@ -435,5 +441,20 @@ class Session
             return !empty($_SESSION['flash'][$type]);
         }
         return !empty($_SESSION['flash']);
+    }
+    /**
+     * Obtenir une valeur de la session
+     */
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return $_SESSION[$key] ?? $default;
+    }
+    
+    /**
+     * Définir une valeur dans la session
+     */
+    public function set(string $key, mixed $value): void
+    {
+        $_SESSION[$key] = $value;
     }
 }

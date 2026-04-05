@@ -2,7 +2,7 @@
 /**
  * SIGR - Admin Controller
  * 
- * Gestion du back-office.
+ * Back-office management.
  */
 
 namespace Controllers;
@@ -24,42 +24,70 @@ class AdminController extends \Core\Controller
     {
         $this->session = Session::getInstance();
         
-        // Vérifier l'authentification
+        // Check authentication
         if (!$this->session->isStaffLoggedIn()) {
+            if ($this->session->getFlash('error') === null) {
+                // Preemptively set message if needed, but header redirect is fine
+            }
             header('Location: ' . Helpers::url('admin/login'));
             exit;
         }
     }
     
     /**
-     * Dashboard principal
+     * Main Dashboard
      */
     public function dashboard(): void
     {
         $orderModel = new OrderModel();
         $stockModel = new StockModel();
         
-        // Statistiques du jour
+        // Today's statistics
         $todayStats = $orderModel->getSalesStats();
         $lowStockCount = $stockModel->countLowStock();
         $pendingOrders = count($orderModel->getPendingPayments());
         $topProducts = $orderModel->getTopProducts(5);
+        $recentOrders = $orderModel->getDailyOrders();
+        
+        // Weekly sales data for chart
+        $weeklySales = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $dayStat = $orderModel->getSalesStats($date, $date);
+            $weeklySales[] = (float) ($dayStat['total_sales'] ?? 0);
+        }
+        
+        // Order status counts for pie chart
+        $allDayOrders = $recentOrders;
+        $orderStats = [
+            'pending' => 0,
+            'preparing' => 0,
+            'ready' => 0,
+            'served' => 0
+        ];
+        foreach ($allDayOrders as $o) {
+            $st = $o['status'] ?? '';
+            if (isset($orderStats[$st])) {
+                $orderStats[$st]++;
+            }
+        }
         
         $this->render('admin/dashboard', [
-            'stats' => [
-                'today_sales' => $todayStats['paid_sales'] ?? 0,
-                'total_orders' => $todayStats['total_orders'] ?? 0,
-                'pending_orders' => $pendingOrders,
-                'low_stock' => $lowStockCount
-            ],
-            'topProducts' => $topProducts,
+            'todaySales' => (float) ($todayStats['total_sales'] ?? 0),
+            'totalOrders' => (int) ($todayStats['total_orders'] ?? 0),
+            'pendingOrders' => $pendingOrders,
+            'lowStockCount' => $lowStockCount,
+            'recentOrders' => array_slice($recentOrders, 0, 10),
+            'popularProducts' => $topProducts,
+            'weeklySales' => $weeklySales,
+            'orderStats' => $orderStats,
             'staffName' => $this->session->getStaffName(),
             'staffRole' => $this->session->getStaffRole()
         ]);
     }
     
     /**
-     * Liste du menu
+     * Menu list
      */
     public function menuList(): void
     {
@@ -72,10 +100,6 @@ class AdminController extends \Core\Controller
             'staffName' => $this->session->getStaffName()
         ]);
     }
-    
-    /**
-     * Formulaire création produit
-     */
     public function menuCreate(): void
     {
         $categoryModel = new CategoryModel();
@@ -88,12 +112,12 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Enregistrer un produit
+     * Store a product
      */
     public function menuStore(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $productModel = new ProductModel();
@@ -111,20 +135,20 @@ class AdminController extends \Core\Controller
             'requires_stock' => isset($_POST['requires_stock'])
         ];
         
-        // Gestion de l'image uploadée
+        // Handle uploaded image
         if (!empty($_FILES['image']['name'])) {
             $data['image_url'] = $this->handleImageUpload($_FILES['image']);
         }
         
         $productId = $productModel->create($data);
         
-        $this->session->setFlash('success', 'Produit créé avec succès');
+        $this->session->setFlash('success', 'Product created successfully');
         header('Location: ' . Helpers::url('admin/menu'));
         exit;
     }
     
     /**
-     * Formulaire modification produit
+     * Edit product form
      */
     public function menuEdit(string $id): void
     {
@@ -146,12 +170,12 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Mettre à jour un produit
+     * Update a product
      */
     public function menuUpdate(string $id): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $productModel = new ProductModel();
@@ -170,40 +194,43 @@ class AdminController extends \Core\Controller
         ];
         
         if (!empty($_FILES['image']['name'])) {
-            $data['image_url'] = $this->handleImageUpload($_FILES['image']);
+            $uploadedPath = $this->handleImageUpload($_FILES['image']);
+            if ($uploadedPath) {
+                $data['image_url'] = $uploadedPath;
+            }
         }
         
         $productModel->update((int) $id, $data);
         
-        $this->session->setFlash('success', 'Produit modifié avec succès');
+        $this->session->setFlash('success', 'Product updated successfully');
         header('Location: ' . Helpers::url('admin/menu'));
         exit;
     }
     
     /**
-     * Supprimer un produit
+     * Delete a product
      */
     public function menuDelete(string $id): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $productModel = new ProductModel();
         $productModel->delete((int) $id);
         
-        $this->session->setFlash('success', 'Produit supprimé');
+        $this->session->setFlash('success', 'Product deleted');
         header('Location: ' . Helpers::url('admin/menu'));
         exit;
     }
     
     /**
-     * Activer/Désactiver un produit
+     * Activate/Deactivate a product
      */
     public function menuToggle(string $id): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $productModel = new ProductModel();
@@ -213,8 +240,8 @@ class AdminController extends \Core\Controller
             $productModel->update((int) $id, [
                 'is_available' => !$product['is_available']
             ]);
-            $status = !$product['is_available'] ? 'activé' : 'désactivé';
-            $this->session->setFlash('success', "Produit {$status}");
+            $status = !$product['is_available'] ? 'activated' : 'deactivated';
+            $this->session->setFlash('success', "Product {$status}");
         }
         
         header('Location: ' . Helpers::url('admin/menu'));
@@ -222,7 +249,7 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Liste des catégories
+     * Category list
      */
     public function categoryList(): void
     {
@@ -235,12 +262,12 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Créer une catégorie
+     * Create a category
      */
     public function categoryStore(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $categoryModel = new CategoryModel();
@@ -254,13 +281,13 @@ class AdminController extends \Core\Controller
             'display_order' => (int) ($_POST['display_order'] ?? 0)
         ]);
         
-        $this->session->setFlash('success', 'Catégorie créée');
+        $this->session->setFlash('success', 'Category created');
         header('Location: ' . Helpers::url('admin/categories'));
         exit;
     }
     
     /**
-     * Liste des stocks
+     * Stock list
      */
     public function stockList(): void
     {
@@ -274,12 +301,12 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Mettre à jour le stock
+     * Update stock
      */
     public function stockUpdate(string $id = ''): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $stockModel = new StockModel();
@@ -301,13 +328,13 @@ class AdminController extends \Core\Controller
             Helpers::jsonSuccess(['quantity' => $quantity]);
         }
         
-        $this->session->setFlash('success', 'Stock mis à jour');
+        $this->session->setFlash('success', 'Stock updated');
         header('Location: ' . Helpers::url('admin/stock'));
         exit;
     }
     
     /**
-     * Liste des tables
+     * Table list
      */
     public function tableList(): void
     {
@@ -320,12 +347,12 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Créer une table
+     * Create a table
      */
     public function tableStore(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $tableModel = new TableModel();
@@ -333,16 +360,16 @@ class AdminController extends \Core\Controller
         $tableModel->create([
             'table_number' => Helpers::sanitize($_POST['table_number'] ?? ''),
             'capacity' => (int) ($_POST['capacity'] ?? 4),
-            'zone' => Helpers::sanitize($_POST['zone'] ?? 'Principale')
+            'zone' => Helpers::sanitize($_POST['zone'] ?? 'Main')
         ]);
         
-        $this->session->setFlash('success', 'Table créée');
+        $this->session->setFlash('success', 'Table created');
         header('Location: ' . Helpers::url('admin/tables'));
         exit;
     }
     
     /**
-     * Générer QR code pour une table
+     * Generate QR code for a table
      */
     public function generateQR(string $id): void
     {
@@ -356,7 +383,7 @@ class AdminController extends \Core\Controller
         
         $qrUrl = $tableModel->getQRCodeUrl((int) $id);
         
-        // Utiliser l'API QR Code
+        // Use QR Code API
         $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($qrUrl);
         
         $this->render('admin/qr-display', [
@@ -368,24 +395,33 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Liste des commandes
+     * Order list
      */
     public function orderList(): void
     {
         $orderModel = new OrderModel();
         
-        // Filtres
+        // Filters
         $status = $_GET['status'] ?? null;
         $date = $_GET['date'] ?? date('Y-m-d');
         
+        // Get all daily orders
+        $allOrders = $orderModel->getDailyOrders();
+        
+        // Apply status filter if provided
+        if ($status) {
+            $allOrders = array_filter($allOrders, fn($o) => $o['status'] === $status);
+        }
+        
         $this->render('admin/orders', [
-            'orders' => $orderModel->getPendingPayments(),
+            'orders' => $allOrders,
+            'statusFilter' => $status,
             'staffName' => $this->session->getStaffName()
         ]);
     }
     
     /**
-     * Détails d'une commande
+     * Order details
      */
     public function orderDetails(string $id): void
     {
@@ -399,12 +435,35 @@ class AdminController extends \Core\Controller
         
         $this->render('admin/order-details', [
             'order' => $order,
+            'items' => $order['items'] ?? [],
             'staffName' => $this->session->getStaffName()
         ]);
     }
     
     /**
-     * Statistiques
+     * Update order status
+     */
+    public function orderStatusUpdate(string $id): void
+    {
+        if (!Helpers::validateCsrf()) {
+            Helpers::jsonError('Invalid token', 403);
+        }
+        
+        $orderModel = new OrderModel();
+        $status = $_POST['status'] ?? '';
+        
+        if ($orderModel->updateStatus((int) $id, $status)) {
+            $this->session->setFlash('success', 'Status updated');
+        } else {
+            $this->session->setFlash('error', 'Update failed');
+        }
+        
+        header('Location: ' . Helpers::url('admin/orders/' . $id));
+        exit;
+    }
+    
+    /**
+     * Statistics
      */
     public function stats(): void
     {
@@ -413,9 +472,76 @@ class AdminController extends \Core\Controller
         $startDate = $_GET['start'] ?? date('Y-m-d', strtotime('-30 days'));
         $endDate = $_GET['end'] ?? date('Y-m-d');
         
+        // Basic stats for the period
+        $periodStats = $orderModel->getSalesStats($startDate, $endDate);
+        $todayStats = $orderModel->getSalesStats(date('Y-m-d'), date('Y-m-d'));
+        
+        $weekStart = date('Y-m-d', strtotime('-7 days'));
+        $weekStats = $orderModel->getSalesStats($weekStart, date('Y-m-d'));
+        
+        $monthStart = date('Y-m-d', strtotime('-30 days'));
+        $monthStats = $orderModel->getSalesStats($monthStart, date('Y-m-d'));
+
+        // Orders by status
+        $allOrders = $orderModel->getDailyOrders(); // We can use all orders or daily, but view implies recent summary
+        // Let's get status distribution over period
+        $db = \Core\Database::getInstance();
+        $statusCounts = $db->query("SELECT status, COUNT(*) as count FROM orders WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY status", [$startDate, $endDate]);
+        $orders_by_status = ['pending' => 0, 'preparing' => 0, 'ready' => 0, 'served' => 0];
+        $completed_orders = 0; $pending_orders = 0; $cancelled_orders = 0;
+        foreach ($statusCounts as $row) {
+            $st = $row['status'];
+            $c = (int)$row['count'];
+            if (isset($orders_by_status[$st])) $orders_by_status[$st] = $c;
+            if ($st === 'ready' || $st === 'paid') $completed_orders += $c;
+            if ($st === 'pending' || $st === 'confirmed' || $st === 'preparing') $pending_orders += $c;
+            if ($st === 'cancelled') $cancelled_orders += $c;
+        }
+
+        // Top products format: ['name_en', 'quantity', 'revenue']
+        $rawTop = $orderModel->getTopProducts(10, $startDate, $endDate);
+        $topProducts = [];
+        foreach ($rawTop as $p) {
+            $topProducts[] = [
+                'name_en' => $p['name_en'] ?? $p['name_fr'],
+                'quantity' => $p['total_sold'],
+                'revenue' => $p['total_revenue']
+            ];
+        }
+
+        // Sales by day
+        $salesByDay = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $dayStat = $orderModel->getSalesStats($date, $date);
+            $dayName = date('D', strtotime($date));
+            $salesByDay[$dayName] = (float) ($dayStat['total_sales'] ?? 0);
+        }
+
+        // Hourly orders (for today)
+        $hourly_orders = array_fill(0, 24, 0);
+        $todayOrders = $db->query("SELECT HOUR(created_at) as h, COUNT(*) as count FROM orders WHERE DATE(created_at) = ? GROUP BY HOUR(created_at)", [date('Y-m-d')]);
+        foreach ($todayOrders as $row) {
+            $hourly_orders[(int)$row['h']] = (int)$row['count'];
+        }
+
+        $stats = [
+            'today_sales' => (float) ($todayStats['total_sales'] ?? 0),
+            'week_sales' => (float) ($weekStats['total_sales'] ?? 0),
+            'month_sales' => (float) ($monthStats['total_sales'] ?? 0),
+            'total_orders' => (int) ($periodStats['total_orders'] ?? 0),
+            'avg_order_value' => (float) ($periodStats['average_order'] ?? 0),
+            'completed_orders' => $completed_orders,
+            'pending_orders' => $pending_orders,
+            'cancelled_orders' => $cancelled_orders,
+            'top_products' => $topProducts,
+            'sales_by_day' => $salesByDay,
+            'orders_by_status' => $orders_by_status,
+            'hourly_orders' => $hourly_orders,
+        ];
+
         $this->render('admin/stats', [
-            'stats' => $orderModel->getSalesStats($startDate, $endDate),
-            'topProducts' => $orderModel->getTopProducts(10, $startDate, $endDate),
+            'stats' => $stats,
             'startDate' => $startDate,
             'endDate' => $endDate,
             'staffName' => $this->session->getStaffName()
@@ -423,7 +549,7 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Paramètres
+     * Settings
      */
     public function settings(): void
     {
@@ -439,12 +565,12 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Mettre à jour les paramètres
+     * Update settings
      */
     public function settingsUpdate(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $db = \Core\Database::getInstance();
@@ -462,13 +588,13 @@ class AdminController extends \Core\Controller
             );
         }
         
-        $this->session->setFlash('success', 'Paramètres mis à jour');
+        $this->session->setFlash('success', 'Settings updated');
         header('Location: ' . Helpers::url('admin/settings'));
         exit;
     }
     
     /**
-     * Liste des utilisateurs
+     * User list
      */
     public function userList(): void
     {
@@ -486,16 +612,16 @@ class AdminController extends \Core\Controller
     }
     
     /**
-     * Créer un utilisateur
+     * Create a user
      */
     public function userStore(): void
     {
         if (!$this->session->hasRole('admin')) {
-            Helpers::jsonError('Accès refusé', 403);
+            Helpers::jsonError('Access denied', 403);
         }
         
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token invalide', 403);
+            Helpers::jsonError('Invalid token', 403);
         }
         
         $userModel = new UserModel();
@@ -508,13 +634,13 @@ class AdminController extends \Core\Controller
             'full_name' => Helpers::sanitize($_POST['full_name'] ?? '')
         ]);
         
-        $this->session->setFlash('success', 'Utilisateur créé');
+        $this->session->setFlash('success', 'User created');
         header('Location: ' . Helpers::url('admin/users'));
         exit;
     }
     
     /**
-     * Gérer l'upload d'image
+     * Handle image upload
      */
     private function handleImageUpload(array $file): ?string
     {
@@ -522,31 +648,32 @@ class AdminController extends \Core\Controller
             return null;
         }
         
-        // Vérifier le type
+        // Check type
         $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!in_array($file['type'], $allowedTypes)) {
             return null;
         }
         
-        // Vérifier la taille
+        // Check size
         if ($file['size'] > UPLOAD_MAX_SIZE) {
             return null;
         }
         
-        // Générer un nom unique
+        // Generate unique name
         $ext = Helpers::getFileExtension($file['name']);
         $filename = Helpers::uniqueFilename($ext);
         
-        // Créer le dossier si nécessaire
+        // Create directory if needed
         $uploadDir = UPLOAD_PATH;
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
         
-        // Déplacer le fichier
+        // Move file
         $destination = $uploadDir . '/' . $filename;
         if (move_uploaded_file($file['tmp_name'], $destination)) {
-            return ASSETS_URL . '/images/uploads/' . $filename;
+            // Return path relative to project root (to be used with url() helper)
+            return 'public/assets/images/uploads/' . $filename;
         }
         
         return null;

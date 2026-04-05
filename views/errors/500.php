@@ -4,9 +4,9 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <title>Erreur serveur - SIGR</title>
+    <title>Server Error - SIGR</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -95,17 +95,17 @@
     <div class="error-container">
         <i class="bi bi-exclamation-triangle error-icon d-block"></i>
         <div class="error-code">500</div>
-        <h2 class="mb-3">Erreur serveur</h2>
+        <h2 class="mb-3">Server Error</h2>
         <p class="text-muted mb-4">
-            Une erreur inattendue s'est produite. Notre équipe a été notifiée.
-            <br>Veuillez réessayer dans quelques instants.
+            An unexpected error occurred. Our team has been notified.
+            <br>Please try again in a few moments.
         </p>
         <div class="d-flex gap-3 justify-content-center">
             <button onclick="location.reload()" class="btn btn-retry">
-                <i class="bi bi-arrow-clockwise me-2"></i>Réessayer
+                <i class="bi bi-arrow-clockwise me-2"></i>Retry
             </button>
             <a href="<?= url('/') ?>" class="btn btn-home">
-                <i class="bi bi-house me-2"></i>Accueil
+                <i class="bi bi-house me-2"></i>Home
             </a>
         </div>
     </div>

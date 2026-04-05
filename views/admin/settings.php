@@ -6,46 +6,46 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Paramètres';
+$pageTitle = 'Settings';
 $currentPage = 'settings';
 $settings = $settings ?? [];
 
-// Groupes de paramètres par défaut
+// Default setting groups
 $settingGroups = [
     'general' => [
-        'title' => 'Général',
+        'title' => 'General',
         'icon' => 'gear',
         'settings' => [
-            'restaurant_name' => ['label' => 'Nom du restaurant', 'type' => 'text', 'default' => 'SIGR Restaurant'],
+            'restaurant_name' => ['label' => 'Restaurant Name', 'type' => 'text', 'default' => 'SIGR Restaurant'],
             'restaurant_email' => ['label' => 'Email', 'type' => 'email', 'default' => ''],
-            'restaurant_phone' => ['label' => 'Téléphone', 'type' => 'tel', 'default' => ''],
-            'restaurant_address' => ['label' => 'Adresse', 'type' => 'textarea', 'default' => ''],
+            'restaurant_phone' => ['label' => 'Phone', 'type' => 'tel', 'default' => ''],
+            'restaurant_address' => ['label' => 'Address', 'type' => 'textarea', 'default' => ''],
         ]
     ],
     'orders' => [
-        'title' => 'Commandes',
+        'title' => 'Orders',
         'icon' => 'receipt',
         'settings' => [
-            'order_prefix' => ['label' => 'Préfixe commandes', 'type' => 'text', 'default' => 'CMD'],
-            'auto_confirm_orders' => ['label' => 'Confirmer auto. les commandes', 'type' => 'checkbox', 'default' => false],
-            'kitchen_display_enabled' => ['label' => 'Écran cuisine activé', 'type' => 'checkbox', 'default' => true],
+            'order_prefix' => ['label' => 'Order Prefix', 'type' => 'text', 'default' => 'CMD'],
+            'auto_confirm_orders' => ['label' => 'Auto-confirm orders', 'type' => 'checkbox', 'default' => false],
+            'kitchen_display_enabled' => ['label' => 'Kitchen screen enabled', 'type' => 'checkbox', 'default' => true],
         ]
     ],
     'display' => [
-        'title' => 'Affichage',
+        'title' => 'Display',
         'icon' => 'palette',
         'settings' => [
-            'currency' => ['label' => 'Devise', 'type' => 'text', 'default' => 'FCFA'],
-            'language' => ['label' => 'Langue par défaut', 'type' => 'select', 'default' => 'fr', 'options' => ['fr' => 'Français', 'en' => 'English']],
-            'theme_color' => ['label' => 'Couleur principale', 'type' => 'color', 'default' => '#667eea'],
+            'currency' => ['label' => 'Currency', 'type' => 'text', 'default' => 'FCFA'],
+            'language' => ['label' => 'Default Language', 'type' => 'select', 'default' => 'en', 'options' => ['fr' => 'Français', 'en' => 'English']],
+            'theme_color' => ['label' => 'Main Color', 'type' => 'color', 'default' => '#667eea'],
         ]
     ],
     'stock' => [
         'title' => 'Stock',
         'icon' => 'box-seam',
         'settings' => [
-            'low_stock_threshold' => ['label' => 'Seuil stock bas (par défaut)', 'type' => 'number', 'default' => 5],
-            'stock_alerts_enabled' => ['label' => 'Alertes stock activées', 'type' => 'checkbox', 'default' => true],
+            'low_stock_threshold' => ['label' => 'Low stock threshold (default)', 'type' => 'number', 'default' => 5],
+            'stock_alerts_enabled' => ['label' => 'Stock alerts enabled', 'type' => 'checkbox', 'default' => true],
         ]
     ],
 ];
@@ -58,17 +58,17 @@ ob_start();
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">Paramètres du restaurant</h4>
-            <p class="text-muted mb-0">Configurez votre application SIGR</p>
+            <h4 class="mb-1">Restaurant Settings</h4>
+            <p class="text-muted mb-0">Configure your SIGR application</p>
         </div>
         <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check-circle me-1"></i>Enregistrer
+            <i class="bi bi-check-circle me-1"></i>Save
         </button>
     </div>
 
     <div class="row">
         <div class="col-lg-3">
-            <!-- Navigation des groupes -->
+            <!-- Group Navigation -->
             <div class="card">
                 <div class="card-body p-0">
                     <div class="nav flex-column nav-pills" role="tablist">
@@ -122,7 +122,7 @@ ob_start();
                                            value="1" 
                                            class="form-check-input" 
                                            <?= $value ? 'checked' : '' ?>>
-                                    <label class="form-check-label">Activé</label>
+                                    <label class="form-check-label">Enabled</label>
                                 </div>
                                 
                                 <?php elseif ($setting['type'] === 'select'): ?>
@@ -158,34 +158,34 @@ ob_start();
         </div>
     </div>
     
-    <!-- Bouton de sauvegarde en bas -->
+    <!-- Save button at bottom -->
     <div class="d-flex justify-content-end mt-4 pt-4 border-top">
         <button type="submit" class="btn btn-primary btn-lg">
-            <i class="bi bi-check-circle me-1"></i>Enregistrer les modifications
+            <i class="bi bi-check-circle me-1"></i>Save Changes
         </button>
     </div>
 </form>
 
-<!-- Section Informations système -->
+<!-- System Information Section -->
 <div class="card mt-4">
     <div class="card-header border-0">
         <h5 class="card-title mb-0">
-            <i class="bi bi-info-circle me-2 text-primary"></i>Informations système
+            <i class="bi bi-info-circle me-2 text-primary"></i>System Information
         </h5>
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-4">
-                <p class="mb-1 text-muted">Version SIGR</p>
+                <p class="mb-1 text-muted">SIGR Version</p>
                 <strong>1.0.0</strong>
             </div>
             <div class="col-md-4">
-                <p class="mb-1 text-muted">Version PHP</p>
+                <p class="mb-1 text-muted">PHP Version</p>
                 <strong><?= phpversion() ?></strong>
             </div>
             <div class="col-md-4">
-                <p class="mb-1 text-muted">Dernière mise à jour</p>
-                <strong><?= date('d/m/Y H:i') ?></strong>
+                <p class="mb-1 text-muted">Last Update</p>
+                <strong><?= date('m/d/Y H:i') ?></strong>
             </div>
         </div>
     </div>
@@ -194,6 +194,6 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

@@ -2,7 +2,7 @@
 /**
  * SIGR - Helpers
  * 
- * Fonctions utilitaires globales pour l'application.
+ * Global utility functions for the application.
  */
 
 namespace Core {
@@ -10,7 +10,7 @@ namespace Core {
 class Helpers
 {
     /**
-     * Échapper une chaîne pour prévenir les attaques XSS
+     * Escape a string to prevent XSS attacks
      */
     public static function escape(mixed $value): string
     {
@@ -21,7 +21,7 @@ class Helpers
     }
     
     /**
-     * Alias court pour escape
+     * Short alias for escape
      */
     public static function e(mixed $value): string
     {
@@ -29,7 +29,7 @@ class Helpers
     }
     
     /**
-     * Générer une URL complète
+     * Generate a full URL
      */
     public static function url(string $path = ''): string
     {
@@ -37,7 +37,7 @@ class Helpers
     }
     
     /**
-     * URL des assets
+     * Asset URL
      */
     public static function asset(string $path): string
     {
@@ -45,7 +45,7 @@ class Helpers
     }
     
     /**
-     * Charger une vue avec des données
+     * Load a view with data
      */
     public static function view(string $view, array $data = []): string
     {
@@ -54,7 +54,7 @@ class Helpers
         $viewPath = VIEWS_PATH . '/' . str_replace('.', '/', $view) . '.php';
         
         if (!file_exists($viewPath)) {
-            throw new \Exception("Vue non trouvée: {$view}");
+            throw new \Exception("View not found: {$view}");
         }
         
         ob_start();
@@ -63,7 +63,7 @@ class Helpers
     }
     
     /**
-     * Rendre une vue et l'afficher
+     * Render and display a view
      */
     public static function render(string $view, array $data = []): void
     {
@@ -71,7 +71,7 @@ class Helpers
     }
     
     /**
-     * Obtenir une traduction
+     * Get a translation
      */
     public static function trans(string $key, array $replace = [], ?string $lang = null): string
     {
@@ -79,7 +79,7 @@ class Helpers
         
         $lang = $lang ?? Session::getInstance()->getLanguage();
         
-        // Charger le fichier de traduction si pas en cache
+        // Load translation file if not cached
         if (!isset($translations[$lang])) {
             $file = LANG_PATH . '/' . $lang . '.json';
             if (file_exists($file)) {
@@ -89,16 +89,16 @@ class Helpers
             }
         }
         
-        // Récupérer la traduction (supporte les clés imbriquées avec .)
+        // Get translation (supports nested keys with .)
         $value = $translations[$lang];
         foreach (explode('.', $key) as $segment) {
             if (!is_array($value) || !isset($value[$segment])) {
-                return $key; // Retourner la clé si traduction non trouvée
+                return $key; // Return key if translation not found
             }
             $value = $value[$segment];
         }
         
-        // Remplacer les placeholders
+        // Replace placeholders
         foreach ($replace as $placeholder => $replacement) {
             $value = str_replace(':' . $placeholder, $replacement, $value);
         }
@@ -107,7 +107,7 @@ class Helpers
     }
     
     /**
-     * Alias court pour trans()
+     * Short alias for trans()
      */
     public static function __(string $key, array $replace = []): string
     {
@@ -115,7 +115,7 @@ class Helpers
     }
     
     /**
-     * Formater un prix avec la devise
+     * Format price with currency
      */
     public static function formatPrice(float|int $amount, bool $showSymbol = true): string
     {
@@ -129,7 +129,7 @@ class Helpers
     }
     
     /**
-     * Formater une date
+     * Format a date
      */
     public static function formatDate(string|\DateTimeInterface $date, string $format = 'd/m/Y H:i'): string
     {
@@ -140,7 +140,7 @@ class Helpers
     }
     
     /**
-     * Formater une date relative (il y a X minutes)
+     * Format relative date (X minutes ago)
      */
     public static function timeAgo(string|\DateTimeInterface $date): string
     {
@@ -157,7 +157,7 @@ class Helpers
             return $diff->y . ($lang === 'fr' ? ' an(s)' : ' year(s)');
         }
         if ($diff->m > 0) {
-            return $diff->m . ' mois';
+            return $diff->m . ($lang === 'fr' ? ' mois' : ' month(s)');
         }
         if ($diff->d > 0) {
             return $diff->d . ($lang === 'fr' ? ' jour(s)' : ' day(s)');
@@ -173,11 +173,11 @@ class Helpers
     }
     
     /**
-     * Générer un numéro de commande unique
+     * Generate unique order number
      */
     public static function generateOrderNumber(): string
     {
-        $prefix = self::getSetting('order_prefix', 'CMD');
+        $prefix = self::getSetting('order_prefix', 'ORD');
         $date = date('Ymd');
         $random = strtoupper(substr(bin2hex(random_bytes(3)), 0, 4));
         
@@ -185,7 +185,7 @@ class Helpers
     }
     
     /**
-     * Obtenir un paramètre de configuration depuis la BDD
+     * Get configuration parameter from DB
      */
     public static function getSetting(string $key, mixed $default = null): mixed
     {
@@ -199,7 +199,7 @@ class Helpers
             foreach ($rows as $row) {
                 $value = $row['setting_value'];
                 
-                // Convertir selon le type
+                // Convert according to type
                 switch ($row['setting_type']) {
                     case 'number':
                         $value = is_numeric($value) ? (strpos($value, '.') !== false ? (float) $value : (int) $value) : 0;
@@ -220,7 +220,7 @@ class Helpers
     }
     
     /**
-     * Réponse JSON
+     * JSON Response
      */
     public static function json(mixed $data, int $status = 200): never
     {
@@ -231,7 +231,7 @@ class Helpers
     }
     
     /**
-     * Réponse JSON de succès
+     * Success JSON response
      */
     public static function jsonSuccess(mixed $data = null, string $message = 'Success'): never
     {
@@ -243,7 +243,7 @@ class Helpers
     }
     
     /**
-     * Réponse JSON d'erreur
+     * Error JSON response
      */
     public static function jsonError(string $message, int $status = 400, mixed $errors = null): never
     {
@@ -255,7 +255,7 @@ class Helpers
     }
     
     /**
-     * Vérifier si la requête est AJAX
+     * Check if request is AJAX
      */
     public static function isAjax(): bool
     {
@@ -264,7 +264,7 @@ class Helpers
     }
     
     /**
-     * Obtenir les données POST en JSON
+     * Get JSON POST data
      */
     public static function getJsonInput(): array
     {
@@ -273,7 +273,7 @@ class Helpers
     }
     
     /**
-     * Générer un token CSRF HTML
+     * Generate HTML CSRF token
      */
     public static function csrfField(): string
     {
@@ -282,7 +282,7 @@ class Helpers
     }
     
     /**
-     * Valider le token CSRF
+     * Validate CSRF token
      */
     public static function validateCsrf(): bool
     {
@@ -291,7 +291,7 @@ class Helpers
     }
     
     /**
-     * Sanitizer une chaîne
+     * Sanitize a string
      */
     public static function sanitize(string $value): string
     {
@@ -299,7 +299,7 @@ class Helpers
     }
     
     /**
-     * Valider un email
+     * Validate an email
      */
     public static function isValidEmail(string $email): bool
     {
@@ -307,7 +307,7 @@ class Helpers
     }
     
     /**
-     * Hasher un mot de passe
+     * Hash a password
      */
     public static function hashPassword(string $password): string
     {
@@ -315,7 +315,7 @@ class Helpers
     }
     
     /**
-     * Vérifier un mot de passe
+     * Verify a password
      */
     public static function verifyPassword(string $password, string $hash): bool
     {
@@ -323,7 +323,7 @@ class Helpers
     }
     
     /**
-     * Obtenir l'extension d'un fichier
+     * Get file extension
      */
     public static function getFileExtension(string $filename): string
     {
@@ -331,7 +331,7 @@ class Helpers
     }
     
     /**
-     * Générer un nom de fichier unique
+     * Generate unique filename
      */
     public static function uniqueFilename(string $extension): string
     {
@@ -339,7 +339,7 @@ class Helpers
     }
     
     /**
-     * Tronquer un texte
+     * Truncate text
      */
     public static function truncate(string $text, int $length = 100, string $suffix = '...'): string
     {
@@ -351,7 +351,7 @@ class Helpers
     }
     
     /**
-     * Slug pour URL
+     * URL Slug
      */
     public static function slug(string $text): string
     {
@@ -363,7 +363,7 @@ class Helpers
 
 } // End namespace Core
 
-// Définir les fonctions globales dans le namespace global
+// Define global functions in global namespace
 namespace {
     use Core\Helpers;
     

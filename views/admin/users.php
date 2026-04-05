@@ -6,15 +6,15 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Gestion des Utilisateurs';
+$pageTitle = 'User Management';
 $currentPage = 'users';
 $users = $users ?? [];
 
 $roleLabels = [
-    'admin' => ['label' => 'Administrateur', 'class' => 'danger'],
+    'admin' => ['label' => 'Administrator', 'class' => 'danger'],
     'manager' => ['label' => 'Manager', 'class' => 'primary'],
-    'staff' => ['label' => 'Personnel', 'class' => 'info'],
-    'kitchen' => ['label' => 'Cuisine', 'class' => 'warning'],
+    'staff' => ['label' => 'Staff', 'class' => 'info'],
+    'kitchen' => ['label' => 'Kitchen', 'class' => 'warning'],
 ];
 
 ob_start();
@@ -23,10 +23,10 @@ ob_start();
 <div class="card">
     <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
         <h4 class="card-title mb-0">
-            <i class="bi bi-people me-2 text-primary"></i>Utilisateurs
+            <i class="bi bi-people me-2 text-primary"></i>Users
         </h4>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-            <i class="bi bi-plus-circle me-1"></i>Ajouter un utilisateur
+            <i class="bi bi-plus-circle me-1"></i>Add User
         </button>
     </div>
     <div class="card-body">
@@ -34,11 +34,11 @@ ob_start();
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Utilisateur</th>
+                        <th>User</th>
                         <th>Email</th>
-                        <th>Rôle</th>
-                        <th>Statut</th>
-                        <th>Dernière connexion</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -47,7 +47,7 @@ ob_start();
                     <tr>
                         <td colspan="6" class="text-center py-5">
                             <i class="bi bi-people display-4 d-block mb-3 text-muted"></i>
-                            <p class="text-muted">Aucun utilisateur trouvé</p>
+                            <p class="text-muted">No users found</p>
                         </td>
                     </tr>
                     <?php else: ?>
@@ -71,13 +71,13 @@ ob_start();
                         <td><span class="badge bg-<?= $role['class'] ?>"><?= $role['label'] ?></span></td>
                         <td>
                             <?php if ($user['is_active'] ?? true): ?>
-                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Actif</span>
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
                             <?php else: ?>
-                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactif</span>
+                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactive</span>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?= $user['last_login'] ? Helpers::formatDate($user['last_login'], 'd/m/Y H:i') : 'Jamais' ?>
+                            <?= $user['last_login'] ? Helpers::formatDate($user['last_login'], 'm/d/Y H:i') : 'Never' ?>
                         </td>
                         <td class="text-center">
                             <div class="dropdown">
@@ -87,7 +87,7 @@ ob_start();
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editUserModal<?= $user['id'] ?>">
-                                            <i class="bi bi-pencil me-2 text-primary"></i>Modifier
+                                            <i class="bi bi-pencil me-2 text-primary"></i>Edit
                                         </a>
                                     </li>
                                     <li>
@@ -95,17 +95,17 @@ ob_start();
                                             <?= csrf_field() ?>
                                             <button type="submit" class="dropdown-item">
                                                 <i class="bi bi-<?= ($user['is_active'] ?? true) ? 'pause' : 'play' ?>-circle me-2"></i>
-                                                <?= ($user['is_active'] ?? true) ? 'Désactiver' : 'Activer' ?>
+                                                <?= ($user['is_active'] ?? true) ? 'Deactivate' : 'Activate' ?>
                                             </button>
                                         </form>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form action="<?= url('admin/users/' . $user['id'] . '/delete') ?>" method="POST"
-                                              onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                                              onsubmit="return confirm('Delete this user?')">
                                             <?= csrf_field() ?>
                                             <button type="submit" class="dropdown-item text-danger">
-                                                <i class="bi bi-trash me-2"></i>Supprimer
+                                                <i class="bi bi-trash me-2"></i>Delete
                                             </button>
                                         </form>
                                     </li>
@@ -121,23 +121,23 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal Ajouter Utilisateur -->
+<!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form action="<?= url('admin/users/store') ?>" method="POST">
                 <?= csrf_field() ?>
                 <div class="modal-header border-0">
-                    <h5 class="modal-title"><i class="bi bi-person-plus me-2 text-primary"></i>Nouvel utilisateur</h5>
+                    <h5 class="modal-title"><i class="bi bi-person-plus me-2 text-primary"></i>New User</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nom complet <span class="text-danger">*</span></label>
+                        <label class="form-label">Full Name <span class="text-danger">*</span></label>
                         <input type="text" name="full_name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nom d'utilisateur <span class="text-danger">*</span></label>
+                        <label class="form-label">Username <span class="text-danger">*</span></label>
                         <input type="text" name="username" class="form-control" required>
                     </div>
                     <div class="mb-3">
@@ -145,11 +145,11 @@ ob_start();
                         <input type="email" name="email" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mot de passe <span class="text-danger">*</span></label>
+                        <label class="form-label">Password <span class="text-danger">*</span></label>
                         <input type="password" name="password" class="form-control" required minlength="6">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Rôle</label>
+                        <label class="form-label">Role</label>
                         <select name="role" class="form-select">
                             <?php foreach ($roleLabels as $key => $role): ?>
                             <option value="<?= $key ?>"><?= $role['label'] ?></option>
@@ -158,9 +158,9 @@ ob_start();
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Créer
+                        <i class="bi bi-check-circle me-1"></i>Create
                     </button>
                 </div>
             </form>
@@ -188,6 +188,6 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

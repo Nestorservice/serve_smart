@@ -222,10 +222,9 @@ class OrderModel extends \Core\Model
         if ($order) {
             $order['items'] = $this->getOrderItems($order['id']);
         }
-        
         return $order;
     }
-    
+
     /**
      * Obtenir les items d'une commande
      */
@@ -250,7 +249,7 @@ class OrderModel extends \Core\Model
             [$sessionId]
         );
     }
-    
+
     /**
      * Obtenir les commandes pour la cuisine
      */
@@ -260,11 +259,11 @@ class OrderModel extends \Core\Model
             "SELECT o.*, rt.table_number
              FROM orders o
              JOIN restaurant_tables rt ON o.table_id = rt.id
-             WHERE o.status IN ('confirmed', 'preparing')
-             ORDER BY o.confirmed_at ASC"
+             WHERE o.status IN ('pending', 'confirmed', 'preparing', 'ready')
+             ORDER BY o.created_at ASC"
         );
     }
-    
+
     /**
      * Obtenir les nouvelles commandes depuis un timestamp
      */
@@ -281,7 +280,7 @@ class OrderModel extends \Core\Model
             [$datetime]
         );
     }
-    
+
     /**
      * Obtenir les commandes en attente de paiement
      */
@@ -295,7 +294,7 @@ class OrderModel extends \Core\Model
              ORDER BY o.created_at DESC"
         );
     }
-    
+
     /**
      * Statistiques des ventes
      */
@@ -340,6 +339,7 @@ class OrderModel extends \Core\Model
             [$startDate, $endDate, $limit]
         );
     }
+    
     /**
      * Obtenir les commandes du jour
      */
@@ -371,7 +371,7 @@ class OrderModel extends \Core\Model
     {
         return $this->db->update(
             'orders', 
-            ['status' => 'paid', 'payment_status' => 'paid', 'payment_method' => $method, 'paid_at' => date('Y-m-d H:i:s')], 
+            ['payment_status' => 'paid', 'payment_method' => $method, 'paid_at' => date('Y-m-d H:i:s')], 
             'id = ?', 
             [$orderId]
         ) > 0;

@@ -2,7 +2,7 @@
 /**
  * SIGR - Kitchen Controller
  * 
- * Interface temps réel pour la cuisine.
+ * Real-time interface for the kitchen.
  */
 
 namespace Controllers;
@@ -24,12 +24,12 @@ class KitchenController extends \Core\Controller
     }
     
     /**
-     * Afficher l'écran cuisine
+     * Display kitchen screen
      * Route: GET /kitchen
      */
     public function display(): void
     {
-        // Vérifier l'authentification
+        // Check authentication
         if (!$this->session->hasRole(['admin', 'manager', 'chef'])) {
             header('Location: ' . Helpers::url('kitchen/login'));
             exit;
@@ -37,19 +37,50 @@ class KitchenController extends \Core\Controller
         
         $orders = $this->orderModel->getForKitchen();
         
-        // Grouper par statut
-        $confirmed = array_filter($orders, fn($o) => $o['status'] === 'confirmed');
-        $preparing = array_filter($orders, fn($o) => $o['status'] === 'preparing');
+        // Enrich each order with its items
+        $enrichedOrders = [];
+        foreach ($orders as $order) {
+            $order['items'] = $this->orderModel->getOrderItems($order['id']);
+            $enrichedOrders[] = $order;
+        }
         
         $this->render('kitchen/display', [
-            'confirmedOrders' => $confirmed,
-            'preparingOrders' => $preparing,
+            'orders' => $enrichedOrders,
             'staffName' => $this->session->getStaffName()
         ]);
     }
     
     /**
-     * Formulaire de connexion cuisine
+     * Update order status from the kitchen
+     * Route: POST /kitchen/status/{id}
+     */
+    public function updateStatus(string $id): void
+    {
+        if (!$this->session->hasRole(['admin', 'manager', 'chef'])) {
+            header('Location: ' . Helpers::url('kitchen/login'));
+            exit;
+        }
+        
+        if (!Helpers::validateCsrf()) {
+            $this->session->setFlash('error', 'Invalid token');
+            header('Location: ' . Helpers::url('kitchen'));
+            exit;
+        }
+        
+        $status = $_POST['status'] ?? '';
+        
+        if ($this->orderModel->updateStatus((int) $id, $status)) {
+            $this->session->setFlash('success', 'Status updated');
+        } else {
+            $this->session->setFlash('error', 'Update failed');
+        }
+        
+        header('Location: ' . Helpers::url('kitchen'));
+        exit;
+    }
+    
+    /**
+     * Kitchen login form
      * Route: GET /kitchen/login
      */
     public function loginForm(): void
@@ -65,13 +96,13 @@ class KitchenController extends \Core\Controller
     }
     
     /**
-     * Traiter la connexion
+     * Process login
      * Route: POST /kitchen/login
      */
     public function login(): void
     {
         if (!Helpers::validateCsrf()) {
-            $this->session->setFlash('error', 'Token invalide');
+            $this->session->setFlash('error', 'Invalid token');
             header('Location: ' . Helpers::url('kitchen/login'));
             exit;
         }
@@ -80,7 +111,7 @@ class KitchenController extends \Core\Controller
         $password = $_POST['password'] ?? '';
         
         if (empty($username) || empty($password)) {
-            $this->session->setFlash('error', 'Veuillez remplir tous les champs');
+            $this->session->setFlash('error', 'Please fill in all fields');
             header('Location: ' . Helpers::url('kitchen/login'));
             exit;
         }
@@ -89,18 +120,18 @@ class KitchenController extends \Core\Controller
         $user = $userModel->getByUsername($username);
         
         if (!$user || !Helpers::verifyPassword($password, $user['password_hash'])) {
-            $this->session->setFlash('error', 'Identifiants incorrects');
+            $this->session->setFlash('error', 'Incorrect credentials');
             header('Location: ' . Helpers::url('kitchen/login'));
             exit;
         }
         
         if (!in_array($user['role'], ['admin', 'manager', 'chef'])) {
-            $this->session->setFlash('error', 'Accès non autorisé');
+            $this->session->setFlash('error', 'Unauthorized access');
             header('Location: ' . Helpers::url('kitchen/login'));
             exit;
         }
         
-        // Connexion réussie
+        // Successful login
         $this->session->loginStaff($user['id'], $user['role'], $user['full_name']);
         
         header('Location: ' . Helpers::url('kitchen'));

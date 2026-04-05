@@ -1,428 +1,377 @@
 <?php
 /**
- * SIGR Kitchen Display - FoodDesk Style
+ * SIGR Kitchen Display - Premium POS Dark Kanban Style
  */
 
 use Core\Helpers;
 
-// Variables
-$pageTitle = 'Cuisine';
+$pageTitle = 'Kitchen';
 $orders = $orders ?? [];
 
 $statusConfig = [
-    'pending' => ['label' => 'En attente', 'class' => 'warning', 'icon' => 'clock'],
-    'confirmed' => ['label' => 'Confirmée', 'class' => 'info', 'icon' => 'check-circle'],
-    'preparing' => ['label' => 'En préparation', 'class' => 'primary', 'icon' => 'fire'],
-    'ready' => ['label' => 'Prête', 'class' => 'success', 'icon' => 'bell'],
+    'pending' => ['label' => 'Pending', 'class' => 'warning', 'icon' => 'clock', 'badge' => '#ff9f1c'],
+    'confirmed' => ['label' => 'Confirmed', 'class' => 'info', 'icon' => 'check-circle', 'badge' => '#3498db'],
+    'preparing' => ['label' => 'Preparing', 'class' => 'primary', 'icon' => 'fire', 'badge' => '#e74c3c'],
+    'ready' => ['label' => 'Ready', 'class' => 'success', 'icon' => 'bell', 'badge' => '#2ed573'],
 ];
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <title><?= e($pageTitle) ?> - SIGR</title>
+    <title><?= e($pageTitle) ?> - Kitchen</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        }
-        
-        * {
-            font-family: 'Poppins', sans-serif;
+            --bg-base: #13151a;
+            --bg-card: #20232a;
+            --bg-card-hover: #262932;
+            --border-color: #303641;
+            --text-main: #ffffff;
+            --text-muted: #8b92a5;
+            --radius-xl: 16px;
+            --radius-md: 12px;
+            --font-main: 'Inter', sans-serif;
         }
         
         body {
-            background: #1a1a2e;
+            font-family: var(--font-main);
+            background: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
         }
         
-        .kitchen-header {
-            background: var(--gradient);
+        /* HEADER */
+        .kitchen-titlebar {
+            background: rgba(32, 35, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
             padding: 1rem 2rem;
-            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
-        .kitchen-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-        }
+        .kitchen-brand h3 { margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        .kitchen-brand i { color: #ff9f1c; margin-right: 10px; }
         
-        .clock {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-        
-        .order-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-            padding: 1.5rem;
-        }
-        
-        .order-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            animation: slideIn 0.5s ease;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .order-card.urgent {
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 10px 40px rgba(255, 193, 7, 0.5); }
-            50% { box-shadow: 0 10px 60px rgba(255, 193, 7, 0.8); }
-        }
-        
-        .order-header {
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .order-header.pending { background: #ffc107; color: #000; }
-        .order-header.preparing { background: var(--gradient); color: white; }
-        .order-header.ready { background: #28a745; color: white; }
-        
-        .order-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .order-table {
-            background: rgba(255,255,255,0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+        .header-stats { display: flex; gap: 20px; }
+        .stat-pill {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 5px 15px;
             font-weight: 600;
-        }
-        
-        .order-body {
-            padding: 1.5rem;
-        }
-        
-        .order-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .order-item:last-child {
-            border-bottom: none;
-        }
-        
-        .item-quantity {
-            width: 40px;
-            height: 40px;
-            background: var(--gradient);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            margin-right: 1rem;
-        }
-        
-        .item-name {
-            font-weight: 600;
-            flex-grow: 1;
-        }
-        
-        .order-notes {
-            background: #fff3cd;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            margin-top: 1rem;
             font-size: 0.9rem;
         }
+        .clock {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ff9f1c;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* GRID */
+        .order-kanban {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
         
-        .order-footer {
-            padding: 1rem 1.5rem;
-            background: #f8f9fa;
+        .ticket-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 2px solid transparent;
+            overflow: hidden;
             display: flex;
-            gap: 0.5rem;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: 0.2s;
         }
         
-        .btn-kitchen {
-            flex: 1;
-            padding: 0.75rem;
-            border-radius: 10px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-kitchen:hover {
-            transform: scale(1.02);
-        }
-        
-        .btn-prepare {
-            background: var(--gradient);
-            color: white;
-        }
-        
-        .btn-ready {
-            background: #28a745;
-            color: white;
-        }
-        
-        .timer {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-        
-        .no-orders {
-            text-align: center;
-            padding: 4rem;
-            color: rgba(255,255,255,0.5);
-        }
-        
-        .no-orders i {
-            font-size: 5rem;
-            margin-bottom: 1rem;
-        }
-        
-        /* Status filter buttons */
-        .filter-bar {
+        .ticket-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
+
+        /* TICKET HEADER */
+        .ticket-header {
+            padding: 15px 20px;
             display: flex;
-            gap: 0.5rem;
-            padding: 0.5rem;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .th-left { display: flex; align-items: center; gap: 10px; }
+        .th-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .th-table {
             background: rgba(255,255,255,0.1);
-            margin: 1rem;
-            border-radius: 15px;
-            justify-content: center;
-        }
-        
-        .filter-btn {
-            padding: 0.5rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: transparent;
-            color: white;
-        }
-        
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: white;
-            color: var(--primary);
-        }
-        
-        .filter-btn .count {
-            background: rgba(255,255,255,0.3);
-            padding: 0.1rem 0.5rem;
-            border-radius: 20px;
-            margin-left: 0.5rem;
+            padding: 4px 10px;
+            border-radius: 4px;
             font-size: 0.8rem;
+            font-weight: 600;
+            color: #d1d5db;
+        }
+        .th-time {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .time-badge {
+            background: #ff4757;
+            color: white;
+            padding: 2px rcpx;
+            border-radius: 4px;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+        }
+
+        /* TICKET ITEMS */
+        .ticket-body {
+            padding: 15px 20px;
+            flex: 1;
+        }
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .item-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-qty {
+            font-weight: 800;
+            font-size: 1.1rem;
+            width: 35px;
+            color: #ff9f1c;
+        }
+        .item-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .item-note {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            background: rgba(255, 159, 28, 0.1);
+            padding: 5px 8px;
+            border-left: 2px solid #ff9f1c;
+            border-radius: 4px;
+        }
+
+        /* TICKET FOOTER / ACTIONS */
+        .ticket-footer {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--border-color);
         }
         
-        .filter-btn.active .count {
-            background: var(--primary);
-            color: white;
+        .action-btn {
+            width: 100%;
+            border: none;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
+            transition: 0.2s;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+        .action-btn i { font-size: 1.2rem; margin-right: 5px; }
+        
+        .btn-confirm { background: #3498db; color: white; }
+        .btn-confirm:hover { background: #2980b9; }
+        
+        .btn-prepare { background: #e74c3c; color: white; }
+        .btn-prepare:hover { background: #c0392b; }
+        
+        .btn-ready { background: #2ed573; color: #111; }
+        .btn-ready:hover { background: #27ae60; }
+
+        /* BORDERS FOR STATUS */
+        .border-pending { border-color: rgba(255, 159, 28, 0.4) !important; }
+        .border-confirmed { border-color: rgba(52, 152, 219, 0.4) !important; }
+        .border-preparing { border-color: rgba(231, 76, 60, 0.5) !important; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4a5568; }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="kitchen-header">
-        <div class="d-flex align-items-center gap-3">
-            <i class="bi bi-fire fs-2"></i>
-            <h1>Écran Cuisine</h1>
+
+    <header class="kitchen-titlebar">
+        <div class="kitchen-brand">
+            <h3><i class="bi bi-fire"></i> KITCHEN BOARD</h3>
         </div>
-        <div class="clock" id="clock">--:--:--</div>
-        <div class="d-flex gap-2">
-            <a href="<?= url('admin/dashboard') ?>" class="btn btn-light btn-sm">
-                <i class="bi bi-speedometer2 me-1"></i>Admin
-            </a>
-            <button onclick="toggleFullscreen()" class="btn btn-light btn-sm">
-                <i class="bi bi-arrows-fullscreen"></i>
-            </button>
+        
+        <div class="header-stats d-none d-md-flex">
+            <div class="stat-pill"><span class="text-warning"><?= count(array_filter($orders, fn($o) => in_array($o['status'], ['pending', 'confirmed']))) ?></span> New</div>
+            <div class="stat-pill"><span class="text-danger"><?= count(array_filter($orders, fn($o) => $o['status'] === 'preparing')) ?></span> Active</div>
+            <div class="stat-pill"><span class="text-success"><?= count(array_filter($orders, fn($o) => $o['status'] === 'ready')) ?></span> Ready</div>
         </div>
+        
+        <div class="clock" id="clock">00:00:00</div>
     </header>
-    
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <button class="filter-btn active" data-status="all">
-            Toutes <span class="count" id="count-all">0</span>
-        </button>
-        <button class="filter-btn" data-status="pending">
-            <i class="bi bi-clock me-1"></i>En attente <span class="count" id="count-pending">0</span>
-        </button>
-        <button class="filter-btn" data-status="preparing">
-            <i class="bi bi-fire me-1"></i>En préparation <span class="count" id="count-preparing">0</span>
-        </button>
-        <button class="filter-btn" data-status="ready">
-            <i class="bi bi-bell me-1"></i>Prêtes <span class="count" id="count-ready">0</span>
-        </button>
-    </div>
-    
-    <!-- Orders Grid -->
-    <div class="order-grid" id="ordersGrid">
+
+    <div class="order-kanban">
         <?php if (empty($orders)): ?>
-        <div class="no-orders" style="grid-column: 1 / -1;">
-            <i class="bi bi-check-circle d-block"></i>
-            <h3>Aucune commande en attente</h3>
-            <p>Les nouvelles commandes apparaîtront ici</p>
-        </div>
+            <div class="col-12 text-center" style="margin-top: 15vh;">
+                <i class="bi bi-cup-hot" style="font-size: 5rem; color: var(--border-color);"></i>
+                <h2 class="mt-4" style="color: var(--text-muted);">No active orders</h2>
+                <p style="color: #555;">The kitchen is quiet for now.</p>
+            </div>
         <?php else: ?>
-        <?php foreach ($orders as $order): ?>
-        <?php 
-        $status = $order['status'] ?? 'pending';
-        $config = $statusConfig[$status] ?? $statusConfig['pending'];
-        $createdAt = strtotime($order['created_at'] ?? 'now');
-        $waitTime = time() - $createdAt;
-        $isUrgent = $status === 'pending' && $waitTime > 600; // 10 minutes
-        ?>
-        <div class="order-card <?= $isUrgent ? 'urgent' : '' ?>" data-status="<?= $status ?>" data-order-id="<?= $order['id'] ?>">
-            <div class="order-header <?= $status ?>">
-                <div>
-                    <span class="order-number">#<?= e($order['order_number'] ?? $order['id']) ?></span>
-                    <div class="timer">
-                        <i class="bi bi-clock me-1"></i>
-                        <span class="wait-time" data-created="<?= $createdAt ?>"><?= floor($waitTime / 60) ?> min</span>
+            <?php foreach ($orders as $order): ?>
+            <?php 
+                $status = $statusConfig[$order['status']] ?? $statusConfig['pending'];
+                
+                // Calculate time elapsed since creation
+                $createdAt = strtotime($order['created_at']);
+                $now = time();
+                $diffMinutes = floor(($now - $createdAt) / 60);
+                
+                // Urgent class if > 20 min in preparation/confirmed
+                $isUrgent = ($diffMinutes > 20 && in_array($order['status'], ['confirmed', 'preparing']));
+            ?>
+            <div class="ticket-card border-<?= $order['status'] ?>">
+                
+                <div class="ticket-header" style="background: <?= $status['badge'] ?>15">
+                    <div class="th-left">
+                        <div class="th-number">#<?= e($order['order_number'] ?? $order['id']) ?></div>
+                        <div class="th-table">T. <?= e($order['table_number'] ?? '?') ?></div>
+                    </div>
+                    <div class="th-time <?= $isUrgent ? 'text-danger' : 'text-muted' ?>">
+                        <i class="bi bi-clock-history"></i>
+                        <?= $diffMinutes ?>m
+                        <?php if ($isUrgent): ?>
+                            <span class="spinner-grow spinner-grow-sm text-danger ms-1" role="status"></span>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <span class="order-table">Table <?= e($order['table_number'] ?? '-') ?></span>
-            </div>
-            
-            <div class="order-body">
-                <?php $items = $order['items'] ?? []; ?>
-                <?php foreach ($items as $item): ?>
-                <div class="order-item">
-                    <div class="item-quantity"><?= $item['quantity'] ?? 1 ?></div>
-                    <span class="item-name"><?= e($item['product_name'] ?? $item['name'] ?? 'Produit') ?></span>
+
+                <div class="ticket-body">
+                    <ul class="item-list">
+                        <?php foreach ($order['items'] ?? [] as $item): ?>
+                        <li class="item-row">
+                            <div class="item-qty"><?= $item['quantity'] ?>x</div>
+                            <div style="flex:1">
+                                <div class="item-name"><?= e(!empty($item['name_en']) ? $item['name_en'] : ($item['name_fr'] ?? 'Item')) ?></div>
+                                <?php if (!empty($item['special_instructions'])): ?>
+                                    <span class="item-note"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> <?= e($item['special_instructions']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    
+                    <?php if (!empty($order['notes'])): ?>
+                    <div class="mt-3 p-2 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid #3498db; font-size: 0.9rem;">
+                        <i class="bi bi-chat-left-text text-info me-1"></i> <?= e($order['notes']) ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
-                <?php endforeach; ?>
-                
-                <?php if (!empty($order['notes'])): ?>
-                <div class="order-notes">
-                    <i class="bi bi-chat-dots me-1"></i> <?= e($order['notes']) ?>
+
+                <div class="ticket-footer">
+                    <form action="<?= url('kitchen/status/' . $order['id']) ?>" method="POST" class="status-form">
+                        <?= csrf_field() ?>
+                        
+                        <?php if ($order['status'] === 'pending'): ?>
+                        <input type="hidden" name="status" value="confirmed">
+                        <button type="submit" class="action-btn btn-confirm"><i class="bi bi-check2-circle"></i> Confirm</button>
+                        
+                        <?php elseif ($order['status'] === 'confirmed'): ?>
+                        <input type="hidden" name="status" value="preparing">
+                        <button type="submit" class="action-btn btn-prepare"><i class="bi bi-fire"></i> Prepare</button>
+                        
+                        <?php elseif ($order['status'] === 'preparing'): ?>
+                        <input type="hidden" name="status" value="ready">
+                        <button type="submit" class="action-btn btn-ready"><i class="bi bi-bell-fill"></i> Ready!</button>
+                        <?php endif; ?>
+                    </form>
                 </div>
-                <?php endif; ?>
             </div>
-            
-            <div class="order-footer">
-                <?php if ($status === 'pending'): ?>
-                <form action="<?= url('kitchen/status/' . $order['id']) ?>" method="POST" class="d-flex flex-grow-1 gap-2">
-                    <?= csrf_field() ?>
-                    <input type="hidden" name="status" value="preparing">
-                    <button type="submit" class="btn-kitchen btn-prepare">
-                        <i class="bi bi-fire me-1"></i>Commencer
-                    </button>
-                </form>
-                <?php elseif ($status === 'preparing'): ?>
-                <form action="<?= url('kitchen/status/' . $order['id']) ?>" method="POST" class="d-flex flex-grow-1 gap-2">
-                    <?= csrf_field() ?>
-                    <input type="hidden" name="status" value="ready">
-                    <button type="submit" class="btn-kitchen btn-ready">
-                        <i class="bi bi-check-circle me-1"></i>Prête !
-                    </button>
-                </form>
-                <?php elseif ($status === 'ready'): ?>
-                <div class="text-center flex-grow-1 text-success fw-bold">
-                    <i class="bi bi-check-circle me-1"></i>En attente du service
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php endforeach; ?>
+            <?php endforeach; ?>
         <?php endif; ?>
     </div>
-    
+
+    <!-- AUDIO FOR NEW ORDERS -->
+    <audio id="orderAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Horloge
+        // HORLOGE
         function updateClock() {
             const now = new Date();
-            document.getElementById('clock').textContent = 
-                now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
         }
         setInterval(updateClock, 1000);
         updateClock();
-        
-        // Mise à jour des timers
-        function updateTimers() {
-            document.querySelectorAll('.wait-time').forEach(el => {
-                const created = parseInt(el.dataset.created);
-                const wait = Math.floor((Date.now() / 1000) - created);
-                el.textContent = Math.floor(wait / 60) + ' min';
-            });
-        }
-        setInterval(updateTimers, 60000);
-        
-        // Compteurs
-        function updateCounts() {
-            const all = document.querySelectorAll('.order-card').length;
-            const pending = document.querySelectorAll('.order-card[data-status="pending"]').length;
-            const preparing = document.querySelectorAll('.order-card[data-status="preparing"]').length;
-            const ready = document.querySelectorAll('.order-card[data-status="ready"]').length;
-            
-            document.getElementById('count-all').textContent = all;
-            document.getElementById('count-pending').textContent = pending;
-            document.getElementById('count-preparing').textContent = preparing;
-            document.getElementById('count-ready').textContent = ready;
-        }
-        updateCounts();
-        
-        // Filtrage
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+
+        // AJAX SUBMIT (Pas de refresh total)
+        document.querySelectorAll('.status-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button');
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                btn.style.opacity = '0.7';
+                btn.disabled = true;
                 
-                const status = this.dataset.status;
-                document.querySelectorAll('.order-card').forEach(card => {
-                    if (status === 'all' || card.dataset.status === status) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(res => {
+                    if(res.ok) window.location.reload();
                 });
             });
         });
-        
-        // Plein écran
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        
-        // Rafraîchissement automatique
-        setTimeout(() => location.reload(), 30000);
-        
-        // Son de notification (nouvelle commande)
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleATU8G...');
+
+        // AUTO-REFRESH SANS CLIGNOTEMENT
+        let currentOrderCount = <?= count($orders) ?>;
+        setInterval(() => {
+            fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newBoard = doc.querySelector('.order-kanban');
+                    const newCount = doc.querySelectorAll('.ticket-card').length;
+                    
+                    if (newCount > currentOrderCount) {
+                        // Play alert sound for new order
+                        document.getElementById('orderAlert').play().catch(() => {});
+                    }
+                    
+                    document.querySelector('.order-kanban').innerHTML = newBoard.innerHTML;
+                    document.querySelector('.header-stats').innerHTML = doc.querySelector('.header-stats').innerHTML;
+                    currentOrderCount = newCount;
+                });
+        }, 15000); // Poll every 15s
     </script>
 </body>
 </html>

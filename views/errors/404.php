@@ -4,9 +4,9 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <title>Page non trouvée - SIGR</title>
+    <title>Page Not Found - SIGR</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -79,12 +79,12 @@
     <div class="error-container">
         <i class="bi bi-emoji-frown error-icon d-block"></i>
         <div class="error-code">404</div>
-        <h2 class="mb-3">Page non trouvée</h2>
+        <h2 class="mb-3">Page Not Found</h2>
         <p class="text-muted mb-4">
-            Oups ! La page que vous recherchez n'existe pas ou a été déplacée.
+            Oops! The page you are looking for does not exist or has been moved.
         </p>
         <a href="<?= url('/') ?>" class="btn btn-home">
-            <i class="bi bi-house me-2"></i>Retour à l'accueil
+            <i class="bi bi-house me-2"></i>Back to Home
         </a>
     </div>
 </body>

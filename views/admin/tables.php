@@ -6,7 +6,7 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Gestion des Tables';
+$pageTitle = 'Table Management';
 $currentPage = 'tables';
 $tables = $tables ?? [];
 
@@ -16,25 +16,25 @@ ob_start();
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="mb-1">Gestion des Tables</h4>
-        <p class="text-muted mb-0"><?= count($tables) ?> table(s) configurée(s)</p>
+        <h4 class="mb-1">Table Management</h4>
+        <p class="text-muted mb-0"><?= count($tables) ?> configured table(s)</p>
     </div>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTableModal">
-        <i class="bi bi-plus-circle me-1"></i>Ajouter une table
+        <i class="bi bi-plus-circle me-1"></i>Add Table
     </button>
 </div>
 
-<!-- Grille des tables -->
+<!-- Table Grid -->
 <div class="row g-4">
     <?php if (empty($tables)): ?>
     <div class="col-12">
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="bi bi-bounding-box display-1 text-muted mb-3"></i>
-                <h4 class="text-muted">Aucune table configurée</h4>
-                <p class="text-muted mb-4">Ajoutez vos premières tables de restaurant</p>
+                <h4 class="text-muted">No tables configured</h4>
+                <p class="text-muted mb-4">Add your first restaurant tables</p>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTableModal">
-                    <i class="bi bi-plus-circle me-1"></i>Ajouter une table
+                    <i class="bi bi-plus-circle me-1"></i>Add Table
                 </button>
             </div>
         </div>
@@ -44,13 +44,13 @@ ob_start();
     <?php
     $hasActiveOrder = !empty($table['active_order']);
     $statusClass = $hasActiveOrder ? 'border-warning' : 'border-success';
-    $statusLabel = $hasActiveOrder ? 'Occupée' : 'Libre';
+    $statusLabel = $hasActiveOrder ? 'Occupied' : 'Available';
     $statusBg = $hasActiveOrder ? 'warning' : 'success';
     ?>
     <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="card h-100 <?= $statusClass ?>" style="border-width: 3px;">
             <div class="card-body text-center">
-                <!-- Numéro de table -->
+                <!-- Table Number -->
                 <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" 
                      style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <span class="text-white fs-2 fw-bold"><?= e($table['table_number']) ?></span>
@@ -64,7 +64,7 @@ ob_start();
                     </span>
                     <?php if (!empty($table['capacity'])): ?>
                     <br><small class="text-muted">
-                        <i class="bi bi-people me-1"></i><?= $table['capacity'] ?> places
+                        <i class="bi bi-people me-1"></i><?= $table['capacity'] ?> seats
                     </small>
                     <?php endif; ?>
                 </div>
@@ -73,7 +73,7 @@ ob_start();
                 <div class="alert alert-warning py-2 mb-3">
                     <small>
                         <i class="bi bi-receipt me-1"></i>
-                        Commande #<?= e($table['active_order']['order_number'] ?? $table['active_order']) ?>
+                        Order #<?= e($table['active_order']['order_number'] ?? $table['active_order']) ?>
                     </small>
                 </div>
                 <?php endif; ?>
@@ -81,7 +81,7 @@ ob_start();
                 <!-- QR Code link -->
                 <div class="mb-3">
                     <a href="<?= url('client/menu?table=' . $table['table_number']) ?>" target="_blank" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-qr-code me-1"></i>Lien menu
+                        <i class="bi bi-qr-code me-1"></i>Menu Link
                     </a>
                 </div>
             </div>
@@ -105,7 +105,7 @@ ob_start();
                     </button>
                     <?php if (!$hasActiveOrder): ?>
                     <form action="<?= url('admin/tables/delete/' . $table['id']) ?>" method="POST" class="d-inline"
-                          onsubmit="return confirm('Supprimer cette table ?')">
+                          onsubmit="return confirm('Delete this table?')">
                         <?= csrf_field() ?>
                         <button type="submit" class="btn btn-sm btn-outline-danger">
                             <i class="bi bi-trash"></i>
@@ -120,31 +120,31 @@ ob_start();
     <?php endif; ?>
 </div>
 
-<!-- Modal Ajouter Table -->
+<!-- Add Table Modal -->
 <div class="modal fade" id="addTableModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="<?= url('admin/tables/add') ?>" method="POST">
                 <?= csrf_field() ?>
                 <div class="modal-header border-0">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2 text-primary"></i>Nouvelle Table</h5>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2 text-primary"></i>New Table</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Numéro de table</label>
+                        <label class="form-label">Table Number</label>
                         <input type="text" name="table_number" class="form-control form-control-lg text-center" required 
                                placeholder="Ex: 1, 2, A1...">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Capacité (places)</label>
+                        <label class="form-label">Capacity (seats)</label>
                         <input type="number" name="capacity" class="form-control" value="4" min="1" max="20">
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Créer
+                        <i class="bi bi-check-circle me-1"></i>Create
                     </button>
                 </div>
             </form>
@@ -152,7 +152,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal Modifier Table -->
+<!-- Edit Table Modal -->
 <div class="modal fade" id="editTableModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -160,23 +160,23 @@ ob_start();
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" id="editTableId">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Modifier Table</h5>
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Edit Table</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Numéro de table</label>
+                        <label class="form-label">Table Number</label>
                         <input type="text" name="table_number" id="editTableNumber" class="form-control form-control-lg text-center" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Capacité (places)</label>
+                        <label class="form-label">Capacity (seats)</label>
                         <input type="number" name="capacity" id="editTableCapacity" class="form-control" min="1" max="20">
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Enregistrer
+                        <i class="bi bi-check-circle me-1"></i>Save
                     </button>
                 </div>
             </form>
@@ -184,7 +184,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal QR Code -->
+<!-- QR Code Modal -->
 <div class="modal fade" id="qrModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -194,10 +194,10 @@ ob_start();
             </div>
             <div class="modal-body text-center">
                 <div id="qrCodeContainer" class="mb-3 p-4 bg-white d-inline-block rounded shadow">
-                    <!-- QR Code sera généré ici -->
+                    <!-- QR Code will be generated here -->
                     <div id="qrcode"></div>
                 </div>
-                <p class="text-muted small mb-3">Scannez ce code pour accéder au menu</p>
+                <p class="text-muted small mb-3">Scan this code to access the menu</p>
                 <div class="input-group mb-3">
                     <input type="text" id="qrUrl" class="form-control" readonly>
                     <button class="btn btn-outline-primary" onclick="copyUrl()">
@@ -205,7 +205,7 @@ ob_start();
                     </button>
                 </div>
                 <button class="btn btn-primary" onclick="printQR()">
-                    <i class="bi bi-printer me-1"></i>Imprimer
+                    <i class="bi bi-printer me-1"></i>Print
                 </button>
             </div>
         </div>
@@ -251,7 +251,7 @@ function copyUrl() {
     const input = document.getElementById('qrUrl');
     input.select();
     document.execCommand('copy');
-    alert('Lien copié !');
+    alert('Link copied !');
 }
 
 function printQR() {
@@ -264,7 +264,7 @@ function printQR() {
         <body style="text-align: center; padding: 20px; font-family: Arial;">
             <h2>Table ${tableNum}</h2>
             ${content}
-            <p>Scannez pour commander</p>
+            <p>Scan to order</p>
         </body>
         </html>
     `);
@@ -276,6 +276,6 @@ function printQR() {
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

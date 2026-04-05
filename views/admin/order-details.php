@@ -6,18 +6,18 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Détail de la commande';
+$pageTitle = 'Order Details';
 $currentPage = 'orders';
 $order = $order ?? [];
 $items = $items ?? [];
 
 $statusConfig = [
-    'pending' => ['label' => 'En attente', 'class' => 'warning', 'icon' => 'clock'],
-    'confirmed' => ['label' => 'Confirmée', 'class' => 'info', 'icon' => 'check-circle'],
-    'preparing' => ['label' => 'En préparation', 'class' => 'primary', 'icon' => 'fire'],
-    'ready' => ['label' => 'Prête', 'class' => 'success', 'icon' => 'bell'],
-    'served' => ['label' => 'Servie', 'class' => 'secondary', 'icon' => 'check2-all'],
-    'cancelled' => ['label' => 'Annulée', 'class' => 'danger', 'icon' => 'x-circle'],
+    'pending' => ['label' => 'Pending', 'class' => 'warning', 'icon' => 'clock'],
+    'confirmed' => ['label' => 'Confirmed', 'class' => 'info', 'icon' => 'check-circle'],
+    'preparing' => ['label' => 'Preparing', 'class' => 'primary', 'icon' => 'fire'],
+    'ready' => ['label' => 'Ready', 'class' => 'success', 'icon' => 'bell'],
+    'served' => ['label' => 'Served', 'class' => 'secondary', 'icon' => 'check2-all'],
+    'cancelled' => ['label' => 'Cancelled', 'class' => 'danger', 'icon' => 'x-circle'],
 ];
 
 $currentStatus = $order['status'] ?? 'pending';
@@ -28,13 +28,13 @@ ob_start();
 
 <div class="row">
     <div class="col-lg-8">
-        <!-- Détails de la commande -->
+        <!-- Order Details -->
         <div class="card mb-4">
             <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="card-title mb-0">
                         <i class="bi bi-receipt me-2 text-primary"></i>
-                        Commande #<?= e($order['order_number'] ?? $order['id']) ?>
+                        Order #<?= e($order['order_number'] ?? $order['id']) ?>
                     </h4>
                 </div>
                 <span class="badge bg-<?= $config['class'] ?> badge-lg">
@@ -48,24 +48,24 @@ ob_start();
                         <h5><i class="bi bi-pin-map me-1"></i>Table <?= e($order['table_number'] ?? '-') ?></h5>
                     </div>
                     <div class="col-md-4">
-                        <p class="text-muted mb-1">Date de commande</p>
-                        <h5><?= Helpers::formatDate($order['created_at'] ?? 'now', 'd/m/Y H:i') ?></h5>
+                        <p class="text-muted mb-1">Order Date</p>
+                        <h5><?= Helpers::formatDate($order['created_at'] ?? 'now', 'm/d/Y H:i') ?></h5>
                     </div>
                     <div class="col-md-4">
-                        <p class="text-muted mb-1">Montant total</p>
+                        <p class="text-muted mb-1">Total Amount</p>
                         <h5 class="text-success"><?= Helpers::formatPrice($order['total_amount'] ?? 0) ?></h5>
                     </div>
                 </div>
                 
-                <!-- Articles -->
-                <h6 class="mb-3"><i class="bi bi-basket me-1"></i>Articles commandés</h6>
+                <!-- Items -->
+                <h6 class="mb-3"><i class="bi bi-basket me-1"></i>Ordered Items</h6>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Produit</th>
-                                <th class="text-center">Qté</th>
-                                <th class="text-end">Prix unit.</th>
+                                <th>Product</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Unit Price</th>
                                 <th class="text-end">Total</th>
                             </tr>
                         </thead>
@@ -73,9 +73,9 @@ ob_start();
                             <?php foreach ($items as $item): ?>
                             <tr>
                                 <td>
-                                    <strong><?= e($item['product_name'] ?? $item['name'] ?? 'Produit') ?></strong>
-                                    <?php if (!empty($item['notes'])): ?>
-                                    <br><small class="text-muted"><?= e($item['notes']) ?></small>
+                                    <strong><?= e(!empty($item['name_en']) ? $item['name_en'] : ($item['name_fr'] ?? $item['product_name'] ?? $item['name'] ?? 'Product')) ?></strong>
+                                    <?php if (!empty($item['special_instructions'] ?? $item['notes'] ?? '')): ?>
+                                    <br><small class="text-muted"><?= e($item['special_instructions'] ?? $item['notes']) ?></small>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
@@ -98,7 +98,7 @@ ob_start();
                 <?php if (!empty($order['notes'])): ?>
                 <div class="alert alert-warning mt-3">
                     <i class="bi bi-chat-dots me-2"></i>
-                    <strong>Notes :</strong> <?= e($order['notes']) ?>
+                    <strong>Notes:</strong> <?= e($order['notes']) ?>
                 </div>
                 <?php endif; ?>
             </div>
@@ -120,7 +120,7 @@ ob_start();
                         <?= csrf_field() ?>
                         <input type="hidden" name="status" value="confirmed">
                         <button type="submit" class="btn btn-info w-100">
-                            <i class="bi bi-check-circle me-1"></i>Confirmer
+                            <i class="bi bi-check-circle me-1"></i>Confirm
                         </button>
                     </form>
                     <?php endif; ?>
@@ -130,7 +130,7 @@ ob_start();
                         <?= csrf_field() ?>
                         <input type="hidden" name="status" value="preparing">
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-fire me-1"></i>En préparation
+                            <i class="bi bi-fire me-1"></i>Mark Preparing
                         </button>
                     </form>
                     <?php endif; ?>
@@ -140,7 +140,7 @@ ob_start();
                         <?= csrf_field() ?>
                         <input type="hidden" name="status" value="ready">
                         <button type="submit" class="btn btn-success w-100">
-                            <i class="bi bi-bell me-1"></i>Marquer prête
+                            <i class="bi bi-bell me-1"></i>Mark Ready
                         </button>
                     </form>
                     <?php endif; ?>
@@ -150,7 +150,7 @@ ob_start();
                         <?= csrf_field() ?>
                         <input type="hidden" name="status" value="served">
                         <button type="submit" class="btn btn-secondary w-100">
-                            <i class="bi bi-check2-all me-1"></i>Marquer servie
+                            <i class="bi bi-check2-all me-1"></i>Mark Served
                         </button>
                     </form>
                     <?php endif; ?>
@@ -158,11 +158,11 @@ ob_start();
                     <?php if (!in_array($currentStatus, ['served', 'cancelled'])): ?>
                     <hr>
                     <form action="<?= url('admin/orders/' . $order['id'] . '/status') ?>" method="POST"
-                          onsubmit="return confirm('Annuler cette commande ?')">
+                          onsubmit="return confirm('Cancel this order?')">
                         <?= csrf_field() ?>
                         <input type="hidden" name="status" value="cancelled">
                         <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-x-circle me-1"></i>Annuler la commande
+                            <i class="bi bi-x-circle me-1"></i>Cancel Order
                         </button>
                     </form>
                     <?php endif; ?>
@@ -170,17 +170,17 @@ ob_start();
             </div>
         </div>
         
-        <!-- Imprimer -->
+        <!-- Print -->
         <div class="card">
             <div class="card-body">
                 <button onclick="window.print()" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-printer me-1"></i>Imprimer le ticket
+                    <i class="bi bi-printer me-1"></i>Print Receipt
                 </button>
             </div>
         </div>
         
         <a href="<?= url('admin/orders') ?>" class="btn btn-link w-100 mt-3">
-            <i class="bi bi-arrow-left me-1"></i>Retour aux commandes
+            <i class="bi bi-arrow-left me-1"></i>Back to Orders List
         </a>
     </div>
 </div>
@@ -188,6 +188,6 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

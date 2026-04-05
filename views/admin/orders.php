@@ -6,30 +6,30 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Gestion des Commandes';
+$pageTitle = 'Order Management';
 $currentPage = 'orders';
 $orders = $orders ?? [];
 $statusFilter = $statusFilter ?? null;
 
 $statusConfig = [
-    'pending' => ['label' => 'En attente', 'class' => 'warning', 'icon' => 'clock'],
-    'confirmed' => ['label' => 'Confirmée', 'class' => 'info', 'icon' => 'check-circle'],
-    'preparing' => ['label' => 'En préparation', 'class' => 'primary', 'icon' => 'fire'],
-    'ready' => ['label' => 'Prête', 'class' => 'success', 'icon' => 'bell'],
-    'served' => ['label' => 'Servie', 'class' => 'secondary', 'icon' => 'check2-all'],
-    'cancelled' => ['label' => 'Annulée', 'class' => 'danger', 'icon' => 'x-circle'],
+    'pending' => ['label' => 'Pending', 'class' => 'warning', 'icon' => 'clock'],
+    'confirmed' => ['label' => 'Confirmed', 'class' => 'info', 'icon' => 'check-circle'],
+    'preparing' => ['label' => 'Preparing', 'class' => 'primary', 'icon' => 'fire'],
+    'ready' => ['label' => 'Ready', 'class' => 'success', 'icon' => 'bell'],
+    'served' => ['label' => 'Served', 'class' => 'secondary', 'icon' => 'check2-all'],
+    'cancelled' => ['label' => 'Cancelled', 'class' => 'danger', 'icon' => 'x-circle'],
 ];
 
 ob_start();
 ?>
 
-<!-- Filtres de statut -->
+<!-- Status Filters -->
 <div class="card mb-4">
     <div class="card-body">
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="me-2 fw-bold">Filtrer par statut :</span>
+            <span class="me-2 fw-bold">Filter by status:</span>
             <a href="<?= url('admin/orders') ?>" class="btn btn-sm <?= !$statusFilter ? 'btn-primary' : 'btn-outline-primary' ?>">
-                <i class="bi bi-grid me-1"></i>Toutes
+                <i class="bi bi-grid me-1"></i>All
             </a>
             <?php foreach ($statusConfig as $key => $config): ?>
             <a href="<?= url('admin/orders?status=' . $key) ?>" 
@@ -41,16 +41,16 @@ ob_start();
     </div>
 </div>
 
-<!-- Tableau des commandes -->
+<!-- Orders Table -->
 <div class="card">
     <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
         <h4 class="card-title mb-0">
             <i class="bi bi-receipt me-2 text-primary"></i>
-            <?= $statusFilter ? 'Commandes ' . strtolower($statusConfig[$statusFilter]['label'] ?? '') : 'Toutes les commandes' ?>
+            <?= $statusFilter ? $statusConfig[$statusFilter]['label'] . ' Orders' : 'All Orders' ?>
         </h4>
         <div class="input-group" style="max-width: 300px;">
             <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
-            <input type="text" id="searchOrders" class="form-control border-start-0" placeholder="Rechercher...">
+            <input type="text" id="searchOrders" class="form-control border-start-0" placeholder="Search...">
         </div>
     </div>
     <div class="card-body">
@@ -58,11 +58,11 @@ ob_start();
             <table class="table table-hover" id="ordersTable">
                 <thead>
                     <tr>
-                        <th>N° Commande</th>
+                        <th>Order No.</th>
                         <th>Table</th>
-                        <th>Articles</th>
-                        <th>Montant</th>
-                        <th>Statut</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                        <th>Status</th>
                         <th>Date</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -72,7 +72,7 @@ ob_start();
                     <tr>
                         <td colspan="7" class="text-center py-5">
                             <i class="bi bi-inbox display-4 d-block mb-3 text-muted"></i>
-                            <p class="text-muted">Aucune commande trouvée</p>
+                            <p class="text-muted">No orders found</p>
                         </td>
                     </tr>
                     <?php else: ?>
@@ -87,14 +87,14 @@ ob_start();
                                 <i class="bi bi-pin-map me-1"></i>Table <?= e($order['table_number'] ?? '-') ?>
                             </span>
                         </td>
-                        <td><?= $order['items_count'] ?? '-' ?> article(s)</td>
+                        <td><?= $order['items_count'] ?? '-' ?> item(s)</td>
                         <td class="fw-bold"><?= Helpers::formatPrice($order['total_amount'] ?? 0) ?></td>
                         <td>
                             <span class="badge bg-<?= $config['class'] ?>">
                                 <i class="bi bi-<?= $config['icon'] ?> me-1"></i><?= $config['label'] ?>
                             </span>
                         </td>
-                        <td><?= Helpers::formatDate($order['created_at'] ?? 'now', 'd/m H:i') ?></td>
+                        <td><?= Helpers::formatDate($order['created_at'] ?? 'now', 'm/d H:i') ?></td>
                         <td class="text-center">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
@@ -103,7 +103,7 @@ ob_start();
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a href="<?= url('admin/orders/' . $order['id']) ?>" class="dropdown-item">
-                                            <i class="bi bi-eye me-2 text-primary"></i>Voir détails
+                                            <i class="bi bi-eye me-2 text-primary"></i>View Details
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
@@ -113,7 +113,7 @@ ob_start();
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="confirmed">
                                             <button type="submit" class="dropdown-item">
-                                                <i class="bi bi-check-circle me-2 text-info"></i>Confirmer
+                                                <i class="bi bi-check-circle me-2 text-info"></i>Confirm
                                             </button>
                                         </form>
                                     </li>
@@ -124,7 +124,7 @@ ob_start();
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="preparing">
                                             <button type="submit" class="dropdown-item">
-                                                <i class="bi bi-fire me-2 text-primary"></i>En préparation
+                                                <i class="bi bi-fire me-2 text-primary"></i>Mark Preparing
                                             </button>
                                         </form>
                                     </li>
@@ -135,7 +135,7 @@ ob_start();
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="ready">
                                             <button type="submit" class="dropdown-item">
-                                                <i class="bi bi-bell me-2 text-success"></i>Marquer prête
+                                                <i class="bi bi-bell me-2 text-success"></i>Mark Ready
                                             </button>
                                         </form>
                                     </li>
@@ -146,7 +146,7 @@ ob_start();
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="served">
                                             <button type="submit" class="dropdown-item">
-                                                <i class="bi bi-check2-all me-2 text-secondary"></i>Marquer servie
+                                                <i class="bi bi-check2-all me-2 text-secondary"></i>Mark Served
                                             </button>
                                         </form>
                                     </li>
@@ -155,11 +155,11 @@ ob_start();
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form action="<?= url('admin/orders/' . $order['id'] . '/status') ?>" method="POST" 
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?')">
+                                              onsubmit="return confirm('Are you sure you want to cancel this order?')">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="status" value="cancelled">
                                             <button type="submit" class="dropdown-item text-danger">
-                                                <i class="bi bi-x-circle me-2"></i>Annuler
+                                                <i class="bi bi-x-circle me-2"></i>Cancel
                                             </button>
                                         </form>
                                     </li>
@@ -177,7 +177,7 @@ ob_start();
 </div>
 
 <script>
-// Recherche
+// Search
 document.getElementById('searchOrders')?.addEventListener('input', function(e) {
     const query = e.target.value.toLowerCase();
     document.querySelectorAll('#ordersTable tbody tr').forEach(row => {
@@ -186,7 +186,7 @@ document.getElementById('searchOrders')?.addEventListener('input', function(e) {
     });
 });
 
-// Rafraîchissement automatique toutes les 30 secondes
+// Auto-refresh every 30 seconds
 setInterval(function() {
     location.reload();
 }, 30000);
@@ -195,6 +195,6 @@ setInterval(function() {
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

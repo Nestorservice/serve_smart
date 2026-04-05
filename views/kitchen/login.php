@@ -5,10 +5,10 @@
 
 use Core\Helpers;
 
-$pageTitle = 'Connexion Cuisine';
+$pageTitle = 'Kitchen Login';
 ?>
 <!DOCTYPE html>
-<html lang="fr" class="h-100">
+<html lang="en" class="h-100">
 <head>
     <title><?= e($pageTitle) ?> - SIGR Restaurant</title>
     <meta charset="utf-8">
@@ -37,15 +37,15 @@ $pageTitle = 'Connexion Cuisine';
                                     <div class="text-center mb-3">
                                         <img src="<?= url('public/assets/images/logo-full.png') ?>" class="mb-3" alt="">
                                         <h4 class="fs-20 font-w800 text-black">
-                                            <i class="bi bi-display me-2"></i>Écran Cuisine
+                                            <i class="bi bi-display me-2"></i>Kitchen Screen
                                         </h4>
-                                        <span class="dlab-sign-up">Connexion</span>
+                                        <span class="dlab-sign-up">Login</span>
                                     </div>
                                     
                                     <?php if (!empty($error)): ?>
                                     <div class="alert alert-danger alert-dismissible fade show">
                                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="me-2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                                        <strong>Erreur!</strong> <?= e(is_array($error) ? ($error[0] ?? 'Identifiants incorrects') : $error) ?>
+                                        <strong>Error!</strong> <?= e(is_array($error) ? ($error[0] ?? 'Incorrect credentials') : $error) ?>
                                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                     </div>
                                     <?php endif; ?>
@@ -53,21 +53,21 @@ $pageTitle = 'Connexion Cuisine';
                                     <form action="<?= url('kitchen/login') ?>" method="POST">
                                         <?= csrf_field() ?>
                                         <div class="mb-3">
-                                            <label class="mb-1"><strong>Nom d'utilisateur</strong></label>
-                                            <input type="text" name="username" class="form-control" placeholder="Entrez votre identifiant" required autofocus>
+                                            <label class="mb-1"><strong>Username</strong></label>
+                                            <input type="text" name="username" class="form-control" placeholder="Enter your identifier" required autofocus>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="mb-1"><strong>Mot de passe</strong></label>
-                                            <input type="password" name="password" class="form-control" placeholder="Entrez votre mot de passe" required>
+                                            <label class="mb-1"><strong>Password</strong></label>
+                                            <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
                                         </div>
                                         <div class="text-center mt-4">
-                                            <button type="submit" class="btn btn-primary btn-block shadow">Se connecter</button>
+                                            <button type="submit" class="btn btn-primary btn-block shadow">Login</button>
                                         </div>
                                     </form>
                                     
                                     <div class="text-center mt-4">
                                         <a href="<?= url('/') ?>" class="text-primary">
-                                            <i class="bi bi-arrow-left me-2"></i>Retour à l'accueil
+                                            <i class="bi bi-arrow-left me-2"></i>Back to Home
                                         </a>
                                     </div>
                                 </div>

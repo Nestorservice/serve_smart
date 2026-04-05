@@ -6,7 +6,7 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Statistiques';
+$pageTitle = 'Statistics';
 $currentPage = 'stats';
 $stats = $stats ?? [
     'today_sales' => 0,
@@ -23,13 +23,13 @@ $stats = $stats ?? [
 ob_start();
 ?>
 
-<!-- Cards de statistiques -->
+<!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-xl-3 col-sm-6">
         <div class="card gradient-1 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Ventes du jour</span>
+                    <span class="fs-16 font-w600">Daily Sales</span>
                     <h2 class="text-white font-w600"><?= Helpers::formatPrice($stats['today_sales'] ?? 0) ?></h2>
                 </div>
                 <i class="bi bi-calendar-day text-white opacity-50" style="font-size: 3rem;"></i>
@@ -41,7 +41,7 @@ ob_start();
         <div class="card gradient-2 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Ventes de la semaine</span>
+                    <span class="fs-16 font-w600">Weekly Sales</span>
                     <h2 class="text-white font-w600"><?= Helpers::formatPrice($stats['week_sales'] ?? 0) ?></h2>
                 </div>
                 <i class="bi bi-calendar-week text-white opacity-50" style="font-size: 3rem;"></i>
@@ -53,7 +53,7 @@ ob_start();
         <div class="card gradient-3 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Ventes du mois</span>
+                    <span class="fs-16 font-w600">Monthly Sales</span>
                     <h2 class="text-white font-w600"><?= Helpers::formatPrice($stats['month_sales'] ?? 0) ?></h2>
                 </div>
                 <i class="bi bi-calendar-month text-white opacity-50" style="font-size: 3rem;"></i>
@@ -65,7 +65,7 @@ ob_start();
         <div class="card gradient-4 card-bx">
             <div class="card-body d-flex align-items-center">
                 <div class="me-auto text-white">
-                    <span class="fs-16 font-w600">Panier moyen</span>
+                    <span class="fs-16 font-w600">Avg. Order Value</span>
                     <h2 class="text-white font-w600"><?= Helpers::formatPrice($stats['avg_order_value'] ?? 0) ?></h2>
                 </div>
                 <i class="bi bi-cart-check text-white opacity-50" style="font-size: 3rem;"></i>
@@ -75,12 +75,12 @@ ob_start();
 </div>
 
 <div class="row">
-    <!-- Graphique des ventes -->
+    <!-- Sales Chart -->
     <div class="col-xl-8 col-lg-12">
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-graph-up me-2 text-primary"></i>Évolution des ventes
+                    <i class="bi bi-graph-up me-2 text-primary"></i>Sales Evolution
                 </h4>
             </div>
             <div class="card-body">
@@ -89,12 +89,12 @@ ob_start();
         </div>
     </div>
     
-    <!-- Distribution des commandes -->
+    <!-- Order Distribution -->
     <div class="col-xl-4 col-lg-6">
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-pie-chart me-2 text-primary"></i>Statut des commandes
+                    <i class="bi bi-pie-chart me-2 text-primary"></i>Order Status Distribution
                 </h4>
             </div>
             <div class="card-body">
@@ -105,12 +105,12 @@ ob_start();
 </div>
 
 <div class="row">
-    <!-- Heures de pointe -->
+    <!-- Peak Hours -->
     <div class="col-xl-6">
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-clock me-2 text-primary"></i>Heures de pointe
+                    <i class="bi bi-clock me-2 text-primary"></i>Peak Hours
                 </h4>
             </div>
             <div class="card-body">
@@ -119,26 +119,26 @@ ob_start();
         </div>
     </div>
     
-    <!-- Top Produits -->
+    <!-- Top Products -->
     <div class="col-xl-6">
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-trophy me-2 text-primary"></i>Top 10 Produits
+                    <i class="bi bi-trophy me-2 text-primary"></i>Top 10 Products
                 </h4>
             </div>
             <div class="card-body">
                 <?php if (empty($stats['top_products'])): ?>
-                <p class="text-muted text-center py-4">Aucune donnée disponible</p>
+                <p class="text-muted text-center py-4">No data available</p>
                 <?php else: ?>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Produit</th>
-                                <th class="text-center">Vendus</th>
-                                <th class="text-end">Revenus</th>
+                                <th>Product</th>
+                                <th class="text-center">Sold</th>
+                                <th class="text-end">Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -153,7 +153,7 @@ ob_start();
                                     <span class="text-muted"><?= $index + 1 ?></span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="fw-bold"><?= e($product['name_fr'] ?? $product['name'] ?? 'Produit') ?></td>
+                                <td class="fw-bold"><?= e(!empty($product['name_en']) ? $product['name_en'] : ($product['name_fr'] ?? $product['name'] ?? 'Product')) ?></td>
                                 <td class="text-center">
                                     <span class="badge bg-primary"><?= $product['quantity'] ?? 0 ?></span>
                                 </td>
@@ -171,13 +171,13 @@ ob_start();
     </div>
 </div>
 
-<!-- Résumé rapide -->
+<!-- Quick Summary -->
 <div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header border-0 pb-0">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-clipboard-data me-2 text-primary"></i>Résumé Rapide
+                    <i class="bi bi-clipboard-data me-2 text-primary"></i>Quick Summary
                 </h4>
             </div>
             <div class="card-body">
@@ -185,25 +185,25 @@ ob_start();
                     <div class="col-md-3 col-6 mb-3">
                         <div class="p-3 rounded" style="background: rgba(102, 126, 234, 0.1);">
                             <h3 class="text-primary mb-1"><?= $stats['total_orders'] ?? 0 ?></h3>
-                            <small class="text-muted">Total Commandes</small>
+                            <small class="text-muted">Total Orders</small>
                         </div>
                     </div>
                     <div class="col-md-3 col-6 mb-3">
                         <div class="p-3 rounded" style="background: rgba(40, 167, 69, 0.1);">
                             <h3 class="text-success mb-1"><?= $stats['completed_orders'] ?? 0 ?></h3>
-                            <small class="text-muted">Commandes Servies</small>
+                            <small class="text-muted">Orders Served</small>
                         </div>
                     </div>
                     <div class="col-md-3 col-6 mb-3">
                         <div class="p-3 rounded" style="background: rgba(255, 193, 7, 0.1);">
                             <h3 class="text-warning mb-1"><?= $stats['pending_orders'] ?? 0 ?></h3>
-                            <small class="text-muted">En Attente</small>
+                            <small class="text-muted">Pending</small>
                         </div>
                     </div>
                     <div class="col-md-3 col-6 mb-3">
                         <div class="p-3 rounded" style="background: rgba(220, 53, 69, 0.1);">
                             <h3 class="text-danger mb-1"><?= $stats['cancelled_orders'] ?? 0 ?></h3>
-                            <small class="text-muted">Annulées</small>
+                            <small class="text-muted">Cancelled</small>
                         </div>
                     </div>
                 </div>
@@ -215,7 +215,7 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Data pour les charts - préparer AVANT le heredoc
+// Data for charts
 $salesData = $stats['sales_by_day'] ?? [];
 $statusData = $stats['orders_by_status'] ?? ['pending' => 0, 'preparing' => 0, 'ready' => 0, 'served' => 0];
 $hourlyData = $stats['hourly_orders'] ?? array_fill(0, 24, 0);
@@ -227,11 +227,11 @@ $hourlyJson = json_encode(array_values($hourlyData));
 $scripts = <<<HTML
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-// Couleurs
+// Colors
 const primaryColor = 'rgba(102, 126, 234, 0.8)';
 const gradientColors = ['#667eea', '#764ba2'];
 
-// Graphique des ventes
+// Sales Chart
 const salesCtx = document.getElementById('salesChart');
 if (salesCtx) {
     const salesLabels = {$salesLabels};
@@ -240,9 +240,9 @@ if (salesCtx) {
     new Chart(salesCtx, {
         type: 'line',
         data: {
-            labels: salesLabels.length ? salesLabels : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+            labels: salesLabels.length ? salesLabels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             datasets: [{
-                label: 'Ventes (FCFA)',
+                label: 'Sales (FCFA)',
                 data: salesValues.length ? salesValues : [0, 0, 0, 0, 0, 0, 0],
                 borderColor: primaryColor,
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -264,13 +264,13 @@ if (salesCtx) {
     });
 }
 
-// Graphique des statuts
+// Status Chart
 const statusCtx = document.getElementById('statusChart');
 if (statusCtx) {
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
-            labels: ['En attente', 'En préparation', 'Prêtes', 'Servies'],
+            labels: ['Pending', 'Preparing', 'Ready', 'Served'],
             datasets: [{
                 data: [{$statusData['pending']}, {$statusData['preparing']}, {$statusData['ready']}, {$statusData['served']}],
                 backgroundColor: ['#ffc107', '#667eea', '#28a745', '#6c757d'],
@@ -284,7 +284,7 @@ if (statusCtx) {
     });
 }
 
-// Graphique horaire
+// Hourly Chart
 const hourlyCtx = document.getElementById('hourlyChart');
 if (hourlyCtx) {
     const hourlyData = {$hourlyJson};
@@ -294,7 +294,7 @@ if (hourlyCtx) {
         data: {
             labels: [...Array(24).keys()].map(h => h + 'h'),
             datasets: [{
-                label: 'Commandes',
+                label: 'Orders',
                 data: hourlyData,
                 backgroundColor: primaryColor,
                 borderRadius: 5
@@ -312,6 +312,6 @@ if (hourlyCtx) {
 </script>
 HTML;
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

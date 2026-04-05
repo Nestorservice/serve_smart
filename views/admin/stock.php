@@ -6,7 +6,7 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Gestion des Stocks';
+$pageTitle = 'Stock Management';
 $currentPage = 'stock';
 $products = $products ?? [];
 $lowStockCount = 0;
@@ -21,7 +21,7 @@ foreach ($products as $product) {
 ob_start();
 ?>
 
-<!-- Header avec stats -->
+<!-- Header with stats -->
 <div class="row mb-4">
     <div class="col-xl-4 col-sm-6">
         <div class="card overflow-hidden">
@@ -33,7 +33,7 @@ ob_start();
                         </span>
                     </div>
                     <div>
-                        <p class="mb-1 text-muted">Total Produits</p>
+                        <p class="mb-1 text-muted">Total Products</p>
                         <h3 class="mb-0 text-primary"><?= $totalProducts ?></h3>
                     </div>
                 </div>
@@ -51,7 +51,7 @@ ob_start();
                         </span>
                     </div>
                     <div>
-                        <p class="mb-1 text-muted">Stock Bas</p>
+                        <p class="mb-1 text-muted">Low Stock</p>
                         <h3 class="mb-0 text-danger"><?= $lowStockCount ?></h3>
                     </div>
                 </div>
@@ -66,7 +66,7 @@ ob_start();
                     <div>
                         <p class="mb-1 text-muted">Actions</p>
                         <a href="<?= url('admin/menu/add') ?>" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
+                            <i class="bi bi-plus-circle me-1"></i> Add Product
                         </a>
                     </div>
                     <span class="bg-success text-white p-3 rounded" style="font-size: 1.5rem;">
@@ -78,15 +78,15 @@ ob_start();
     </div>
 </div>
 
-<!-- Tableau des stocks -->
+<!-- Stock Table -->
 <div class="card">
     <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
         <h4 class="card-title mb-0">
-            <i class="bi bi-clipboard-data me-2 text-primary"></i>État des stocks
+            <i class="bi bi-clipboard-data me-2 text-primary"></i>Stock Status
         </h4>
         <div class="input-group" style="max-width: 300px;">
             <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
-            <input type="text" id="searchStock" class="form-control border-start-0" placeholder="Rechercher...">
+            <input type="text" id="searchStock" class="form-control border-start-0" placeholder="Search...">
         </div>
     </div>
     <div class="card-body">
@@ -94,11 +94,11 @@ ob_start();
             <table class="table table-hover" id="stockTable">
                 <thead>
                     <tr>
-                        <th>Produit</th>
-                        <th>Catégorie</th>
-                        <th class="text-center">Stock actuel</th>
-                        <th class="text-center">Seuil alerte</th>
-                        <th class="text-center">Statut</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th class="text-center">Current Stock</th>
+                        <th class="text-center">Alert Threshold</th>
+                        <th class="text-center">Status</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -107,7 +107,7 @@ ob_start();
                     <tr>
                         <td colspan="6" class="text-center py-5">
                             <i class="bi bi-inbox display-4 d-block mb-3 text-muted"></i>
-                            <p class="text-muted">Aucun produit dans l'inventaire</p>
+                            <p class="text-muted">No products in inventory</p>
                         </td>
                     </tr>
                     <?php else: ?>
@@ -129,12 +129,12 @@ ob_start();
                                 </div>
                                 <?php endif; ?>
                                 <div>
-                                    <strong><?= e($product['name_fr'] ?? $product['name'] ?? '') ?></strong>
+                                    <strong><?= e(!empty($product['name_en']) ? $product['name_en'] : ($product['name_fr'] ?? $product['name'] ?? 'Product')) ?></strong>
                                     <br><small class="text-muted"><?= Helpers::formatPrice($product['price'] ?? 0) ?></small>
                                 </div>
                             </div>
                         </td>
-                        <td><span class="badge bg-light text-dark"><?= e($product['category_name'] ?? 'Non catégorisé') ?></span></td>
+                        <td><span class="badge bg-light text-dark"><?= e($product['category_name'] ?? 'Uncategorized') ?></span></td>
                         <td class="text-center">
                             <span class="fw-bold fs-5 <?= $isOut ? 'text-danger' : ($isLow ? 'text-warning' : 'text-success') ?>">
                                 <?= $stock ?>
@@ -143,9 +143,9 @@ ob_start();
                         <td class="text-center"><?= $threshold ?></td>
                         <td class="text-center">
                             <?php if ($isOut): ?>
-                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Rupture</span>
+                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Out of stock</span>
                             <?php elseif ($isLow): ?>
-                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Stock bas</span>
+                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Low stock</span>
                             <?php else: ?>
                             <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>OK</span>
                             <?php endif; ?>
@@ -153,9 +153,9 @@ ob_start();
                         <td class="text-center">
                             <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#stockModal" 
                                     data-product-id="<?= $product['id'] ?>"
-                                    data-product-name="<?= e($product['name_fr'] ?? $product['name'] ?? '') ?>"
+                                    data-product-name="<?= e(!empty($product['name_en']) ? $product['name_en'] : ($product['name_fr'] ?? $product['name'] ?? 'Product')) ?>"
                                     data-stock="<?= $stock ?>">
-                                <i class="bi bi-pencil"></i> Modifier
+                                <i class="bi bi-pencil"></i> Edit
                             </button>
                         </td>
                     </tr>
@@ -167,7 +167,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal de modification du stock -->
+<!-- Stock Update Modal -->
 <div class="modal fade" id="stockModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -176,14 +176,14 @@ ob_start();
                 <input type="hidden" name="product_id" id="modalProductId">
                 
                 <div class="modal-header border-0">
-                    <h5 class="modal-title"><i class="bi bi-box-seam me-2 text-primary"></i>Modifier le stock</h5>
+                    <h5 class="modal-title"><i class="bi bi-box-seam me-2 text-primary"></i>Edit Stock</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-3">Produit : <strong id="modalProductName"></strong></p>
+                    <p class="mb-3">Product: <strong id="modalProductName"></strong></p>
                     
                     <div class="mb-3">
-                        <label class="form-label">Nouveau stock</label>
+                        <label class="form-label">New Stock</label>
                         <input type="number" name="stock_quantity" id="modalStock" class="form-control form-control-lg text-center" min="0" required>
                     </div>
                     
@@ -195,9 +195,9 @@ ob_start();
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i>Enregistrer
+                        <i class="bi bi-check-circle me-1"></i>Save
                     </button>
                 </div>
             </form>
@@ -206,7 +206,7 @@ ob_start();
 </div>
 
 <script>
-// Recherche
+// Search
 document.getElementById('searchStock')?.addEventListener('input', function(e) {
     const query = e.target.value.toLowerCase();
     document.querySelectorAll('#stockTable tbody tr').forEach(row => {
@@ -233,6 +233,6 @@ function adjustStock(amount) {
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

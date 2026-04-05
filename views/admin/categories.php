@@ -6,7 +6,7 @@
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Gestion des Catégories';
+$pageTitle = 'Category Management';
 $currentPage = 'categories';
 $categories = $categories ?? [];
 
@@ -18,17 +18,17 @@ ob_start();
         <div class="card">
             <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">
-                    <i class="bi bi-tags me-2 text-primary"></i>Catégories
+                    <i class="bi bi-tags me-2 text-primary"></i>Categories
                 </h4>
-                <span class="badge bg-primary"><?= count($categories) ?> catégories</span>
+                <span class="badge bg-primary"><?= count($categories) ?> categories</span>
             </div>
             <div class="card-body">
                 <?php if (empty($categories)): ?>
                 <div class="text-center py-5">
                     <i class="bi bi-folder-x display-4 d-block mb-3 text-muted"></i>
-                    <p class="text-muted">Aucune catégorie créée</p>
+                    <p class="text-muted">No categories created</p>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                        <i class="bi bi-plus-circle me-1"></i>Créer une catégorie
+                        <i class="bi bi-plus-circle me-1"></i>Create Category
                     </button>
                 </div>
                 <?php else: ?>
@@ -41,9 +41,9 @@ ob_start();
                                 <i class="bi bi-<?= e($category['icon'] ?? 'tag') ?> text-white fs-4"></i>
                             </div>
                             <div>
-                                <h6 class="mb-0"><?= e($category['name_fr'] ?? $category['name'] ?? '') ?></h6>
+                                <h6 class="mb-0"><?= e($category['name_en'] ?? $category['name_fr'] ?? $category['name'] ?? '') ?></h6>
                                 <small class="text-muted">
-                                    <?= $category['product_count'] ?? 0 ?> produit(s)
+                                    <?= $category['product_count'] ?? 0 ?> product(s)
                                 </small>
                             </div>
                         </div>
@@ -54,7 +54,7 @@ ob_start();
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <form action="<?= url('admin/categories/' . $category['id'] . '/delete') ?>" method="POST"
-                                  onsubmit="return confirm('Supprimer cette catégorie ?')">
+                                  onsubmit="return confirm('Delete this category?')">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-trash"></i>
@@ -70,30 +70,30 @@ ob_start();
                                 <form action="<?= url('admin/categories/' . $category['id'] . '/update') ?>" method="POST">
                                     <?= csrf_field() ?>
                                     <div class="modal-header border-0">
-                                        <h5 class="modal-title">Modifier la catégorie</h5>
+                                        <h5 class="modal-title">Edit Category</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
                                         <div class="mb-3">
-                                            <label class="form-label">Nom</label>
+                                            <label class="form-label">Name</label>
                                             <input type="text" name="name" class="form-control" 
-                                                   value="<?= e($category['name_fr'] ?? $category['name'] ?? '') ?>" required>
+                                                   value="<?= e($category['name_en'] ?? $category['name_fr'] ?? $category['name'] ?? '') ?>" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Icône (Bootstrap Icons)</label>
+                                            <label class="form-label">Icon (Bootstrap Icons)</label>
                                             <input type="text" name="icon" class="form-control" 
                                                    value="<?= e($category['icon'] ?? 'tag') ?>" 
                                                    placeholder="ex: cup-hot, egg-fried, droplet">
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Ordre d'affichage</label>
+                                            <label class="form-label">Display Order</label>
                                             <input type="number" name="display_order" class="form-control" 
                                                    value="<?= $category['display_order'] ?? 0 ?>">
                                         </div>
                                     </div>
                                     <div class="modal-footer border-0">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary">Save</button>
                                     </div>
                                 </form>
                             </div>
@@ -110,39 +110,39 @@ ob_start();
         <div class="card">
             <div class="card-header border-0">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-plus-circle me-2 text-primary"></i>Nouvelle catégorie
+                    <i class="bi bi-plus-circle me-2 text-primary"></i>New Category
                 </h5>
             </div>
             <div class="card-body">
                 <form action="<?= url('admin/categories/store') ?>" method="POST">
                     <?= csrf_field() ?>
                     <div class="mb-3">
-                        <label class="form-label">Nom <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" placeholder="Ex: Boissons" required>
+                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="Ex: Drinks" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Icône</label>
+                        <label class="form-label">Icon</label>
                         <input type="text" name="icon" class="form-control" placeholder="ex: cup-hot">
                         <small class="text-muted">
-                            <a href="https://icons.getbootstrap.com/" target="_blank">Voir les icônes disponibles</a>
+                            <a href="https://icons.getbootstrap.com/" target="_blank">View available icons</a>
                         </small>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label">Ordre d'affichage</label>
+                        <label class="form-label">Display Order</label>
                         <input type="number" name="display_order" class="form-control" value="0">
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-check-circle me-1"></i>Créer la catégorie
+                        <i class="bi bi-check-circle me-1"></i>Create Category
                     </button>
                 </form>
             </div>
         </div>
         
-        <!-- Icônes suggérées -->
+        <!-- Suggested Icons -->
         <div class="card mt-4">
             <div class="card-header border-0">
                 <h6 class="card-title mb-0">
-                    <i class="bi bi-lightbulb me-2 text-warning"></i>Icônes suggérées
+                    <i class="bi bi-lightbulb me-2 text-warning"></i>Suggested Icons
                 </h6>
             </div>
             <div class="card-body">
@@ -165,6 +165,6 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

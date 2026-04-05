@@ -2,7 +2,7 @@
 /**
  * SIGR - Auth Controller
  * 
- * Gère l'authentification du staff (admin, manager, chef, caissier).
+ * Manages staff authentication (admin, manager, chef, cashier).
  */
 
 namespace Controllers;
@@ -23,7 +23,7 @@ class AuthController extends \Core\Controller
     }
     
     /**
-     * Formulaire de connexion admin
+     * Admin login form
      * Route: GET /admin/login
      */
     public function loginForm(): void
@@ -40,13 +40,13 @@ class AuthController extends \Core\Controller
     }
     
     /**
-     * Traiter la connexion
+     * Process login
      * Route: POST /admin/login
      */
     public function login(): void
     {
         if (!Helpers::validateCsrf()) {
-            $this->session->setFlash('error', 'Token de sécurité invalide');
+            $this->session->setFlash('error', 'Invalid security token');
             header('Location: ' . Helpers::url('admin/login'));
             exit;
         }
@@ -55,30 +55,30 @@ class AuthController extends \Core\Controller
         $password = $_POST['password'] ?? '';
         
         if (empty($username) || empty($password)) {
-            $this->session->setFlash('error', 'Veuillez remplir tous les champs');
+            $this->session->setFlash('error', 'Please fill in all fields');
             header('Location: ' . Helpers::url('admin/login'));
             exit;
         }
         
-        // Authentifier
+        // Authenticate
         $user = $this->userModel->authenticate($username, $password);
         
         if (!$user) {
-            $this->session->setFlash('error', 'Identifiants incorrects');
+            $this->session->setFlash('error', 'Incorrect credentials');
             header('Location: ' . Helpers::url('admin/login'));
             exit;
         }
         
         if (!$user['is_active']) {
-            $this->session->setFlash('error', 'Compte désactivé');
+            $this->session->setFlash('error', 'Account deactivated');
             header('Location: ' . Helpers::url('admin/login'));
             exit;
         }
         
-        // Connexion réussie
+        // Successful login
         $this->session->loginStaff($user['id'], $user['role'], $user['full_name']);
         
-        // Redirection selon le rôle
+        // Redirect based on role
         $redirectUrl = match($user['role']) {
             'chef' => 'kitchen',
             default => 'admin'
@@ -89,13 +89,13 @@ class AuthController extends \Core\Controller
     }
     
     /**
-     * Déconnexion
+     * Logout
      * Route: POST /admin/logout
      */
     public function logout(): void
     {
         $this->session->logoutStaff();
-        $this->session->setFlash('success', 'Déconnexion réussie');
+        $this->session->setFlash('success', 'Logout successful');
         header('Location: ' . Helpers::url('admin/login'));
         exit;
     }

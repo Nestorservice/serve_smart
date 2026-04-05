@@ -2,4 +2,20 @@
 *.sql
 import_db.php
 refactor_*.php
+check_products.php
+fix_image_paths.php
 /public/assets/images/uploads/*
+!/public/assets/images/uploads/.gitkeep
+
+# Composer
+/vendor/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

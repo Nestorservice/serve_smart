@@ -2,7 +2,7 @@
 /**
  * SIGR - Client Controller
  * 
- * Gère les interactions des clients (menu, panier, commande).
+ * Manages client interactions (menu, cart, order).
  */
 
 namespace Controllers;
@@ -32,42 +32,48 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Scan d'une table via QR Code
+     * Scan a table via QR Code
      * Route: GET /table/{tableNumber}
      */
     public function scanTable(string $tableNumber): void
     {
-        // Vérifier que la table existe
+        // Check if table exists
         $table = $this->tableModel->getByNumber($tableNumber);
         
         if (!$table) {
-            // Table invalide
+            // Invalid table
             $this->render('errors/invalid-table', [
                 'message' => Helpers::__('errors.invalid_table')
             ]);
             return;
         }
         
-        // Créer une nouvelle session pour cette table
+        // Create a new session for this table
         $this->session->createTableSession($table['id']);
         
-        // Rediriger vers le menu
+        // Redirect to menu
         header('Location: ' . Helpers::url('client/menu'));
         exit;
     }
     
     /**
-     * Afficher le menu complet
+     * Show full menu
      * Route: GET /client/menu
      */
     public function showMenu(): void
     {
-        // Si ?table=XX est passé, créer la session automatiquement
+        // If ?table=XX is passed, create or update the session
         if (!empty($_GET['table'])) {
             $tableNumber = $_GET['table'];
             $table = $this->tableModel->getByNumber($tableNumber);
-            if ($table && !$this->session->validateTableSession()) {
-                $this->session->createTableSession($table['id']);
+            if ($table) {
+                $currentSession = $this->session->validateTableSession();
+                if (!$currentSession || (int)$currentSession['table_id'] !== (int)$table['id']) {
+                    $this->session->createTableSession($table['id']);
+                    // Redirect so the cookie is available on next request
+                    header('Location: ' . Helpers::url('client/menu'));
+                    exit;
+                }
             }
         }
         
@@ -92,13 +98,13 @@ class ClientController extends \Core\Controller
             'selectedCategory' => $selectedCategory,
             'tableNumber' => $tableSession ? $tableSession['table_number'] : ($_GET['table'] ?? null),
             'lang' => $lang,
-            'cart' => $tableSession ? $this->getCart() : [],
+            'cart' => $tableSession ? $this->enrichCartItems($this->getCart()) : [],
             'readOnly' => !$tableSession
         ]);
     }
     
     /**
-     * Afficher les produits d'une catégorie
+     * Show category products
      * Route: GET /client/menu/{categoryId}
      */
     public function showCategory(string $categoryId): void
@@ -130,7 +136,7 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Afficher un produit
+     * Show a product
      * Route: GET /client/product/{productId}
      */
     public function showProduct(string $productId): void
@@ -160,7 +166,7 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Afficher le panier
+     * Show cart
      * Route: GET /client/cart
      */
     public function showCart(): void
@@ -183,38 +189,60 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Ajouter un produit au panier
+     * Add a product to cart
      * Route: POST /client/cart/add
      */
     public function addToCart(): void
     {
+        $isAjax = Helpers::isAjax();
+        
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token CSRF invalide', 403);
+            if ($isAjax) {
+                Helpers::jsonError('Invalid CSRF token', 403);
+            }
+            $this->session->setFlash('error', 'Invalid CSRF token');
+            header('Location: ' . Helpers::url('client/menu'));
+            exit;
         }
         
         $tableSession = $this->session->validateTableSession();
         if (!$tableSession) {
-            Helpers::jsonError('Session expirée', 401);
+            if ($isAjax) {
+                Helpers::jsonError('Session expired', 401);
+            }
+            header('Location: ' . Helpers::url('/'));
+            exit;
         }
         
-        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
+        // Combine POST and JSON input for AJAX requests to support both FormData and JSON
+        $data = $isAjax ? array_merge($_POST, $this->getJsonInput()) : $_POST;
         
         $productId = (int) ($data['product_id'] ?? 0);
         $quantity = max(1, (int) ($data['quantity'] ?? 1));
         $instructions = Helpers::sanitize($data['instructions'] ?? '');
         
-        // Vérifier le produit
+        // Check product
         $product = $this->productModel->getById($productId);
         
         if (!$product) {
-            Helpers::jsonError('Produit introuvable', 404);
+            if ($isAjax) {
+                Helpers::jsonError('Product not found', 404);
+            }
+            $this->session->setFlash('error', 'Product not found');
+            header('Location: ' . Helpers::url('client/menu'));
+            exit;
         }
         
         if (!$this->productModel->isAvailable($productId, $quantity)) {
-            Helpers::jsonError(Helpers::__('errors.stock_insufficient'), 400);
+            if ($isAjax) {
+                Helpers::jsonError(Helpers::__('errors.stock_insufficient'), 400);
+            }
+            $this->session->setFlash('error', 'Insufficient stock');
+            header('Location: ' . Helpers::url('client/menu'));
+            exit;
         }
         
-        // Ajouter au panier (session)
+        // Add to cart (session)
         $cart = $this->getCart();
         $key = $productId . '_' . md5($instructions);
         
@@ -231,23 +259,40 @@ class ClientController extends \Core\Controller
         
         $this->saveCart($cart);
         
-        Helpers::jsonSuccess([
-            'cart_count' => $this->getCartCount(),
-            'cart_total' => $this->getCartTotal()
-        ], Helpers::__('client.added_to_cart'));
+        if ($isAjax) {
+            Helpers::jsonSuccess([
+                'cart_count' => $this->getCartCount(),
+                'cart_total' => $this->getCartTotal()
+            ], Helpers::__('client.added_to_cart'));
+        }
+        
+        // Non-AJAX: redirect back to menu
+        $this->session->setFlash('success', 'Added to cart!');
+        $redirectUrl = 'client/menu';
+        if (!empty($data['table'])) {
+            $redirectUrl .= '?table=' . $data['table'];
+        }
+        header('Location: ' . Helpers::url($redirectUrl));
+        exit;
     }
     
     /**
-     * Mettre à jour un item du panier
+     * Update a cart item
      * Route: POST /client/cart/update
      */
     public function updateCart(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token CSRF invalide', 403);
+            if (Helpers::isAjax()) {
+                Helpers::jsonError('Invalid CSRF token', 403);
+            }
+            $this->session->setFlash('error', 'Invalid CSRF token');
+            header('Location: ' . Helpers::url('client/cart'));
+            exit;
         }
         
-        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
+        $isAjax = Helpers::isAjax();
+        $data = $isAjax ? array_merge($_POST, $this->getJsonInput()) : $_POST;
         
         $key = $data['key'] ?? '';
         $quantity = max(0, (int) ($data['quantity'] ?? 0));
@@ -263,73 +308,113 @@ class ClientController extends \Core\Controller
             $this->saveCart($cart);
         }
         
-        Helpers::jsonSuccess([
-            'cart_count' => $this->getCartCount(),
-            'cart_total' => $this->getCartTotal()
-        ]);
+        if (Helpers::isAjax()) {
+            Helpers::jsonSuccess([
+                'cart_count' => $this->getCartCount(),
+                'cart_total' => $this->getCartTotal()
+            ]);
+        }
+        
+        header('Location: ' . Helpers::url('client/cart'));
+        exit;
     }
     
     /**
-     * Retirer un item du panier
+     * Remove an item from cart
      * Route: POST /client/cart/remove
      */
     public function removeFromCart(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token CSRF invalide', 403);
+            if (Helpers::isAjax()) {
+                Helpers::jsonError('Invalid CSRF token', 403);
+            }
+            $this->session->setFlash('error', 'Invalid CSRF token');
+            header('Location: ' . Helpers::url('client/cart'));
+            exit;
         }
         
-        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
+        $isAjax = Helpers::isAjax();
+        $data = $isAjax ? array_merge($_POST, $this->getJsonInput()) : $_POST;
         $key = $data['key'] ?? '';
         
         $cart = $this->getCart();
         
-        if (isset($cart[$key])) {
+        // Handle clear all
+        if ($key === '__clear_all__') {
+            $this->saveCart([]);
+        } elseif (isset($cart[$key])) {
             unset($cart[$key]);
             $this->saveCart($cart);
         }
         
-        Helpers::jsonSuccess([
-            'cart_count' => $this->getCartCount(),
-            'cart_total' => $this->getCartTotal()
-        ]);
+        if (Helpers::isAjax()) {
+            Helpers::jsonSuccess([
+                'cart_count' => $this->getCartCount(),
+                'cart_total' => $this->getCartTotal()
+            ]);
+        }
+        
+        header('Location: ' . Helpers::url('client/cart'));
+        exit;
     }
     
     /**
-     * Passer la commande
+     * Place an order
      * Route: POST /client/order
      */
     public function placeOrder(): void
     {
+        $isAjax = Helpers::isAjax();
+        
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token CSRF invalide', 403);
+            if ($isAjax) {
+                Helpers::jsonError('Invalid CSRF token', 403);
+            }
+            $this->session->setFlash('error', 'Invalid CSRF token');
+            header('Location: ' . Helpers::url('client/cart'));
+            exit;
         }
         
         $tableSession = $this->session->validateTableSession();
         if (!$tableSession) {
-            Helpers::jsonError('Session expirée', 401);
+            if ($isAjax) {
+                Helpers::jsonError('Session expired', 401);
+            }
+            header('Location: ' . Helpers::url('/'));
+            exit;
         }
         
         $cart = $this->getCart();
         
         if (empty($cart)) {
-            Helpers::jsonError('Panier vide', 400);
+            if ($isAjax) {
+                Helpers::jsonError('Empty cart', 400);
+            }
+            $this->session->setFlash('error', 'Your cart is empty');
+            header('Location: ' . Helpers::url('client/cart'));
+            exit;
         }
         
-        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
+        $data = $isAjax ? array_merge($_POST, $this->getJsonInput()) : $_POST;
         $notes = Helpers::sanitize($data['notes'] ?? '');
         
-        // Vérifier la disponibilité de tous les produits
+        // Check availability of all products
         foreach ($cart as $item) {
             if (!$this->productModel->isAvailable($item['product_id'], $item['quantity'])) {
                 $product = $this->productModel->getById($item['product_id']);
-                $productName = $product['name_fr'] ?? 'Produit';
-                Helpers::jsonError("Stock insuffisant pour: {$productName}", 400);
+                $productName = $product['name_en'] ?? $product['name_fr'] ?? 'Product';
+                if ($isAjax) {
+                    Helpers::jsonError("Insufficient stock for: {$productName}", 400);
+                }
+                $this->session->setFlash('error', "Insufficient stock for: {$productName}");
+                header('Location: ' . Helpers::url('client/cart'));
+                exit;
             }
         }
         
         try {
-            // Créer la commande
+            // Create the order
             $orderId = $this->orderModel->create(
                 (int) $tableSession['table_id'],
                 (int) $tableSession['id'],
@@ -337,27 +422,63 @@ class ClientController extends \Core\Controller
                 $notes
             );
             
-            // Confirmer et décrémenter le stock
+            // Confirm and decrement stock
             $this->orderModel->confirm($orderId);
             
-            // Vider le panier
+            // Empty the cart
             $this->saveCart([]);
             
-            // Récupérer la commande créée
+            // Get the created order
             $order = $this->orderModel->getById($orderId);
             
-            Helpers::jsonSuccess([
-                'order_id' => $orderId,
-                'order_number' => $order['order_number']
-            ], Helpers::__('order.order_received'));
+            if ($isAjax) {
+                Helpers::jsonSuccess([
+                    'order_id' => $orderId,
+                    'order_number' => $order['order_number']
+                ], Helpers::__('order.order_received'));
+            }
+            
+            // Redirect to payment for standard form POST since the button says "Continue to payment"
+            header('Location: ' . Helpers::url('client/payment/' . $orderId));
+            exit;
             
         } catch (\Exception $e) {
-            Helpers::jsonError($e->getMessage(), 500);
+            if ($isAjax) {
+                Helpers::jsonError($e->getMessage(), 500);
+            }
+            $this->session->setFlash('error', $e->getMessage());
+            header('Location: ' . Helpers::url('client/cart'));
+            exit;
         }
     }
     
     /**
-     * Suivre une commande
+     * Track most recent order (nav shortcut)
+     */
+    public function trackLatestOrder(): void
+    {
+        $tableSession = $this->session->validateTableSession();
+        if (!$tableSession) {
+            $this->session->setFlash('danger', 'Session expired.');
+            $this->redirect('home');
+            return;
+        }
+
+        $orders = $this->orderModel->getBySession((int) $tableSession['id']);
+        if (empty($orders)) {
+            $this->session->setFlash('info', 'You have no active orders.');
+            header('Location: ' . Helpers::url('client/menu'));
+            exit;
+        }
+
+        // orderModel returns orders sorted by date descending (most recent first)
+        $latestOrder = $orders[0];
+        header('Location: ' . Helpers::url('client/order/' . $latestOrder['id']));
+        exit;
+    }
+
+    /**
+     * Track an order
      * Route: GET /client/order/{orderId}
      */
     public function trackOrder(string $orderId): void
@@ -370,8 +491,9 @@ class ClientController extends \Core\Controller
         }
         
         $order = $this->orderModel->getById((int) $orderId);
+        $orderItems = $order ? ($order['items'] ?? $this->orderModel->getOrderItems((int) $orderId)) : [];
         
-        // Vérifier que la commande appartient à cette session
+        // Verify that order belongs to this session
         if (!$order || (int) $order['table_session_id'] !== (int) $tableSession['id']) {
             header('Location: ' . Helpers::url('client/menu'));
             exit;
@@ -379,13 +501,14 @@ class ClientController extends \Core\Controller
         
         $this->render('client/order-tracking', [
             'order' => $order,
+            'orderItems' => $orderItems,
             'tableNumber' => $tableSession['table_number'],
             'lang' => $this->session->getLanguage()
         ]);
     }
     
     /**
-     * Page de paiement
+     * Payment page
      * Route: GET /client/payment/{orderId}
      */
     public function showPayment(string $orderId): void
@@ -412,40 +535,44 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Traiter le paiement
+     * Process payment
      * Route: POST /client/payment/process
      */
     public function processPayment(): void
     {
         if (!Helpers::validateCsrf()) {
-            Helpers::jsonError('Token CSRF invalide', 403);
+            Helpers::jsonError('Invalid CSRF token', 403);
         }
         
         $tableSession = $this->session->validateTableSession();
         if (!$tableSession) {
-            Helpers::jsonError('Session expirée', 401);
+            Helpers::jsonError('Session expired', 401);
         }
         
-        $data = Helpers::isAjax() ? $this->getJsonInput() : $_POST;
+        $isAjax = Helpers::isAjax();
+        $data = $isAjax ? array_merge($_POST, $this->getJsonInput()) : $_POST;
+        
         $orderId = (int) ($data['order_id'] ?? 0);
         $method = $data['method'] ?? 'cash';
+        $phone = $data['phone'] ?? null;
         
         $order = $this->orderModel->getById($orderId);
         
         if (!$order || (int) $order['table_session_id'] !== (int) $tableSession['id']) {
-            Helpers::jsonError('Commande invalide', 404);
+            Helpers::jsonError('Invalid order', 404);
         }
         
-        // Pour le paiement en espèces, simplement marquer comme "paiement en attente"
+        // For cash, simply say it will be paid at the cashier.
+        // Cuisine status remains "confirmed"
         if ($method === 'cash') {
-            $this->orderModel->updateStatus($orderId, 'served');
             Helpers::jsonSuccess([
-                'message' => Helpers::__('payment.pay_at_cashier')
+                'message' => Helpers::__('payment.pay_at_cashier'),
+                'redirect' => url('client/ticket/' . $orderId)
             ]);
         }
         
-        // TODO: Intégration Mobile Money (Orange, MTN, Moov)
-        // Pour l'instant, on lance une simulation réussie
+        // TODO: Mobile Money Integration (Orange, MTN, Moov)
+        // Simulate a successful payment
         
         $paymentModel = new \Models\PaymentModel();
         $ref = 'SIM_' . strtoupper($method) . '_' . time();
@@ -456,23 +583,50 @@ class ClientController extends \Core\Controller
             'method' => $method,
             'transaction_ref' => $ref,
             'status' => 'completed',
-            'phone_number' => $data['phone'] ?? null
+            'phone_number' => $phone
         ]);
         
         $this->orderModel->markAsPaid($orderId, $method);
         
         Helpers::jsonSuccess([
             'message' => Helpers::__('payment.payment_successful'),
-            'transaction_ref' => $ref
+            'transaction_ref' => $ref,
+            'redirect' => url('client/ticket/' . $orderId)
+        ]);
+    }
+    
+    /**
+     * Show payment receipt (Ticket)
+     */
+    public function showTicket(int $orderId): void
+    {
+        $tableSession = $this->session->validateTableSession();
+        if (!$tableSession) {
+            $this->session->setFlash('danger', 'Session expired.');
+            $this->redirect('home');
+            return;
+        }
+        
+        $order = $this->orderModel->getById($orderId);
+        
+        if (!$order || (int) $order['table_session_id'] !== (int) $tableSession['id']) {
+            $this->session->setFlash('danger', 'Order not found.');
+            $this->redirect('client.menu');
+            return;
+        }
+        
+        $this->render('client/ticket', [
+            'order' => $order,
+            'tableNumber' => $tableSession['table_number']
         ]);
     }
     
     // =========================================
-    // Méthodes Privées - Gestion Panier
+    // Private Methods - Cart Management
     // =========================================
     
     /**
-     * Obtenir le panier depuis la session
+     * Get cart from session
      */
     private function getCart(): array
     {
@@ -480,7 +634,7 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Sauvegarder le panier en session
+     * Save cart to session
      */
     private function saveCart(array $cart): void
     {
@@ -488,7 +642,7 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Obtenir le nombre d'articles dans le panier
+     * Get number of items in cart
      */
     private function getCartCount(): int
     {
@@ -497,7 +651,7 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Obtenir le total du panier
+     * Get cart total amount
      */
     private function getCartTotal(): float
     {
@@ -512,7 +666,7 @@ class ClientController extends \Core\Controller
     }
     
     /**
-     * Enrichir les items du panier avec les infos produits
+     * Enrich cart items with product info
      */
     private function enrichCartItems(array $cart): array
     {

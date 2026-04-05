@@ -7,7 +7,7 @@ use Core\Helpers;
 
 // Variables
 $isEdit = isset($product) && $product;
-$pageTitle = $isEdit ? 'Modifier le produit' : 'Ajouter un produit';
+$pageTitle = $isEdit ? 'Edit Product' : 'Add Product';
 $currentPage = 'menu';
 $product = $product ?? [];
 $categories = $categories ?? [];
@@ -25,7 +25,7 @@ ob_start();
                         <?= $pageTitle ?>
                     </h4>
                     <a href="<?= url('admin/menu') ?>" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-arrow-left me-1"></i>Retour
+                        <i class="bi bi-arrow-left me-1"></i>Back
                     </a>
                 </div>
             </div>
@@ -37,50 +37,61 @@ ob_start();
                     <?= csrf_field() ?>
                     
                     <div class="row g-4">
-                        <!-- Informations de base -->
+                        <!-- Basic Information -->
                         <div class="col-12">
                             <h6 class="text-primary mb-3">
-                                <i class="bi bi-info-circle me-1"></i>Informations de base
+                                <i class="bi bi-info-circle me-1"></i>Basic Information
                             </h6>
                         </div>
                         
-                        <div class="col-md-8">
-                            <label class="form-label">Nom du produit <span class="text-danger">*</span></label>
+                        <div class="col-md-6">
+                            <label class="form-label">Product Name (EN) <span class="text-danger">*</span></label>
+                            <input type="text" name="name_en" class="form-control form-control-lg" 
+                                   value="<?= e($product['name_en'] ?? '') ?>" 
+                                   placeholder="Ex: Braised Chicken" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nom du produit (FR)</label>
                             <input type="text" name="name_fr" class="form-control form-control-lg" 
                                    value="<?= e($product['name_fr'] ?? '') ?>" 
-                                   placeholder="Ex: Poulet Braisé" required>
-                            <input type="hidden" name="name_en" value="<?= e($product['name_en'] ?? '') ?>">
+                                   placeholder="Ex: Poulet Braisé">
                         </div>
                         
-                        <div class="col-md-4">
-                            <label class="form-label">Catégorie</label>
+                        <div class="col-md-12">
+                            <label class="form-label">Category</label>
                             <select name="category_id" class="form-select form-select-lg">
-                                <option value="">-- Sélectionner --</option>
+                                <option value="">-- Select Category --</option>
                                 <?php foreach ($categories as $cat): ?>
                                 <option value="<?= $cat['id'] ?>" 
                                         <?= ($product['category_id'] ?? '') == $cat['id'] ? 'selected' : '' ?>>
-                                    <?= e($cat['name_fr'] ?? $cat['name'] ?? '') ?>
+                                    <?= e($cat['name_en'] ?? $cat['name_fr'] ?? $cat['name'] ?? '') ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
+                        <div class="col-md-6">
+                            <label class="form-label">Description (EN)</label>
+                            <textarea name="description_en" class="form-control" rows="3" 
+                                      placeholder="Describe your product in English..."><?= e($product['description_en'] ?? '') ?></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Description (FR)</label>
                             <textarea name="description_fr" class="form-control" rows="3" 
-                                      placeholder="Décrivez votre produit..."><?= e($product['description_fr'] ?? '') ?></textarea>
-                            <input type="hidden" name="description_en" value="<?= e($product['description_en'] ?? '') ?>">
+                                      placeholder="Décrivez votre produit en français..."><?= e($product['description_fr'] ?? '') ?></textarea>
                         </div>
                         
-                        <!-- Prix et Stock -->
+                        <!-- Price & Stock -->
                         <div class="col-12 mt-4">
                             <h6 class="text-primary mb-3">
-                                <i class="bi bi-currency-dollar me-1"></i>Prix et Stock
+                                <i class="bi bi-currency-dollar me-1"></i>Price & Stock
                             </h6>
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label">Prix <span class="text-danger">*</span></label>
+                            <label class="form-label">Price <span class="text-danger">*</span></label>
                             <div class="input-group input-group-lg">
                                 <input type="number" name="price" class="form-control" 
                                        value="<?= $product['price'] ?? '' ?>" 
@@ -90,13 +101,13 @@ ob_start();
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label">Quantité en stock</label>
+                            <label class="form-label">Stock Quantity</label>
                             <input type="number" name="stock_quantity" class="form-control form-control-lg" 
                                    value="<?= $product['stock_quantity'] ?? 100 ?>" min="0">
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label">Seuil d'alerte stock</label>
+                            <label class="form-label">Stock Alert Threshold</label>
                             <input type="number" name="stock_alert_threshold" class="form-control form-control-lg" 
                                    value="<?= $product['stock_alert_threshold'] ?? 5 ?>" min="0">
                         </div>
@@ -104,24 +115,24 @@ ob_start();
                         <!-- Image -->
                         <div class="col-12 mt-4">
                             <h6 class="text-primary mb-3">
-                                <i class="bi bi-image me-1"></i>Image du produit
+                                <i class="bi bi-image me-1"></i>Product Image
                             </h6>
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">Télécharger une image</label>
+                            <label class="form-label">Upload Image</label>
                             <input type="file" name="image" class="form-control" accept="image/*" id="imageInput">
-                            <small class="text-muted">Formats acceptés : JPG, PNG, GIF. Max 2 Mo.</small>
+                            <small class="text-muted">Accepted formats: JPG, PNG, GIF. Max 2 MB.</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">Aperçu</label>
+                            <label class="form-label">Preview</label>
                             <div id="imagePreview" class="rounded overflow-hidden bg-light d-flex align-items-center justify-content-center" 
                                  style="height: 150px; border: 2px dashed #dee2e6;">
                                 <?php if (!empty($product['image_url'])): ?>
                                 <img src="<?= url($product['image_url']) ?>" class="img-fluid" style="max-height: 100%;">
                                 <?php else: ?>
-                                <span class="text-muted"><i class="bi bi-image me-1"></i>Pas d'image</span>
+                                <span class="text-muted"><i class="bi bi-image me-1"></i>No image</span>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -140,8 +151,8 @@ ob_start();
                                        class="form-check-input" id="isAvailable"
                                        <?= ($product['is_available'] ?? 1) ? 'checked' : '' ?>>
                                 <label class="form-check-label" for="isAvailable">
-                                    <strong>Produit disponible</strong>
-                                    <br><small class="text-muted">Afficher dans le menu client</small>
+                                    <strong>Product Available</strong>
+                                    <br><small class="text-muted">Show in client menu</small>
                                 </label>
                             </div>
                         </div>
@@ -153,21 +164,21 @@ ob_start();
                                        class="form-check-input" id="isFeatured"
                                        <?= ($product['is_featured'] ?? 0) ? 'checked' : '' ?>>
                                 <label class="form-check-label" for="isFeatured">
-                                    <strong>Produit vedette</strong>
-                                    <br><small class="text-muted">Mettre en avant sur la page d'accueil</small>
+                                    <strong>Featured Product</strong>
+                                    <br><small class="text-muted">Highlight on home page</small>
                                 </label>
                             </div>
                         </div>
                         
-                        <!-- Préparation -->
+                        <!-- Preparation -->
                         <div class="col-12 mt-4">
                             <h6 class="text-primary mb-3">
-                                <i class="bi bi-clock me-1"></i>Préparation
+                                <i class="bi bi-clock me-1"></i>Preparation
                             </h6>
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label">Temps de préparation estimé</label>
+                            <label class="form-label">Estimated Preparation Time</label>
                             <div class="input-group">
                                 <input type="number" name="preparation_time" class="form-control" 
                                        value="<?= $product['preparation_time'] ?? 15 ?>" min="0">
@@ -180,11 +191,11 @@ ob_start();
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <a href="<?= url('admin/menu') ?>" class="btn btn-outline-secondary btn-lg">
-                                    <i class="bi bi-x-circle me-1"></i>Annuler
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
                                 </a>
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="bi bi-check-circle me-1"></i>
-                                    <?= $isEdit ? 'Enregistrer les modifications' : 'Créer le produit' ?>
+                                    <?= $isEdit ? 'Save Changes' : 'Create Product' ?>
                                 </button>
                             </div>
                         </div>
@@ -213,6 +224,6 @@ document.getElementById('imageInput')?.addEventListener('change', function(e) {
 <?php
 $content = ob_get_clean();
 
-// Inclure le layout
+// Include layout
 include VIEWS_PATH . '/layouts/admin.php';
 ?>

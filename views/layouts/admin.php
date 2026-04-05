@@ -2,11 +2,11 @@
 /**
  * SIGR Admin Layout - Based on FoodDesk Template
  * 
- * Variables disponibles:
- * - $pageTitle : titre de la page
- * - $currentPage : page active pour le menu
- * - $content : contenu principal
- * - $scripts : scripts additionnels (optionnel)
+ * Available Variables:
+ * - $pageTitle : Page title
+ * - $currentPage : Active page for the menu
+ * - $content : Main content
+ * - $scripts : Additional scripts (optional)
  */
 
 use Core\Session;
@@ -15,7 +15,7 @@ use Core\Helpers;
 $userName = Session::getInstance()->getStaffName() ?? 'Admin';
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <title><?= e($pageTitle ?? 'Dashboard') ?> - SIGR Admin</title>
     <meta charset="utf-8">
@@ -145,7 +145,7 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
                             
                             <ul class="navbar-nav header-right">
                                 <li class="nav-item">
-                                    <button class="dark-mode-toggle" id="darkModeToggle" title="Mode sombre">
+                                    <button class="dark-mode-toggle" id="darkModeToggle" title="Dark mode">
                                         <i class="bi bi-moon-fill"></i>
                                     </button>
                                 </li>
@@ -165,13 +165,13 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a href="<?= url('admin/settings') ?>" class="dropdown-item ai-icon">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="text-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                                                <span class="ms-2">Paramètres</span>
+                                                <span class="ms-2">Settings</span>
                                             </a>
                                             <form action="<?= url('admin/logout') ?>" method="POST" class="d-inline w-100">
                                                 <?= csrf_field() ?>
                                                 <button type="submit" class="dropdown-item ai-icon">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="text-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                                                    <span class="ms-2">Déconnexion</span>
+                                                    <span class="ms-2">Logout</span>
                                                 </button>
                                             </form>
                                         </div>
@@ -188,26 +188,26 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
         <div class="dlabnav border-right">
             <div class="dlabnav-scroll">
                 <?php $staffRole = Session::getInstance()->getStaffRole(); ?>
-                <p class="menu-title style-1">Menu Principal</p>
+                <p class="menu-title style-1">Main Menu</p>
                 <ul class="metismenu" id="menu">
-                    <!-- Dashboard - visible pour tous -->
+                    <!-- Dashboard - Visible to all -->
                     <li class="<?= ($currentPage ?? '') === 'dashboard' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin') ?>">
                             <i class="bi bi-grid"></i>
-                            <span class="nav-text">Tableau de bord</span>
+                            <span class="nav-text">Dashboard</span>
                         </a>
                     </li>
                     
-                    <!-- Commandes - visible pour tous -->
+                    <!-- Orders - Visible to all -->
                     <li class="<?= ($currentPage ?? '') === 'orders' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin/orders') ?>">
                             <i class="bi bi-bag-check"></i>
-                            <span class="nav-text">Commandes</span>
+                            <span class="nav-text">Orders</span>
                         </a>
                     </li>
                     
                     <?php if (in_array($staffRole, ['admin', 'manager'])): ?>
-                    <!-- Restaurant (Menu/Catégories) - admin & manager -->
+                    <!-- Restaurant (Menu/Categories) - Admin & Manager -->
                     <li class="<?= in_array($currentPage ?? '', ['menu', 'categories']) ? 'mm-active' : '' ?>">
                         <a class="has-arrow" href="javascript:void(0);" aria-expanded="false">
                             <i class="bi bi-shop-window"></i>
@@ -215,11 +215,11 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
                         </a>
                         <ul aria-expanded="false">
                             <li><a href="<?= url('admin/menu') ?>" class="<?= ($currentPage ?? '') === 'menu' ? 'mm-active' : '' ?>">Menu</a></li>
-                            <li><a href="<?= url('admin/categories') ?>" class="<?= ($currentPage ?? '') === 'categories' ? 'mm-active' : '' ?>">Catégories</a></li>
+                            <li><a href="<?= url('admin/categories') ?>" class="<?= ($currentPage ?? '') === 'categories' ? 'mm-active' : '' ?>">Categories</a></li>
                         </ul>
                     </li>
                     
-                    <!-- Stocks - admin & manager -->
+                    <!-- Stocks - Admin & Manager -->
                     <li class="<?= ($currentPage ?? '') === 'stock' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin/stock') ?>">
                             <i class="bi bi-box-seam"></i>
@@ -227,7 +227,7 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
                         </a>
                     </li>
                     
-                    <!-- Tables & QR - admin & manager -->
+                    <!-- Tables & QR - Admin & Manager -->
                     <li class="<?= ($currentPage ?? '') === 'tables' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin/tables') ?>">
                             <i class="bi bi-qr-code"></i>
@@ -237,55 +237,55 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
                     <?php endif; ?>
                     
                     <?php if (in_array($staffRole, ['admin', 'manager'])): ?>
-                    <li class="menu-title">Autre</li>
+                    <li class="menu-title">Other</li>
                     
-                    <!-- Statistiques - admin & manager -->
+                    <!-- Statistics - Admin & Manager -->
                     <li class="<?= ($currentPage ?? '') === 'stats' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin/stats') ?>">
                             <i class="bi bi-bar-chart"></i>
-                            <span class="nav-text">Statistiques</span>
+                            <span class="nav-text">Statistics</span>
                         </a>
                     </li>
                     <?php endif; ?>
                     
                     <?php if ($staffRole === 'admin'): ?>
-                    <!-- Utilisateurs - admin uniquement -->
+                    <!-- Users - Admin only -->
                     <li class="<?= ($currentPage ?? '') === 'users' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin/users') ?>">
                             <i class="bi bi-people"></i>
-                            <span class="nav-text">Utilisateurs</span>
+                            <span class="nav-text">Users</span>
                         </a>
                     </li>
                     
-                    <!-- Paramètres - admin uniquement -->
+                    <!-- Settings - Admin only -->
                     <li class="<?= ($currentPage ?? '') === 'settings' ? 'mm-active' : '' ?>">
                         <a href="<?= url('admin/settings') ?>">
                             <i class="bi bi-gear"></i>
-                            <span class="nav-text">Paramètres</span>
+                            <span class="nav-text">Settings</span>
                         </a>
                     </li>
                     <?php endif; ?>
                     
                     <?php if (in_array($staffRole, ['admin', 'manager', 'chef'])): ?>
-                    <!-- Écran Cuisine - admin, manager & chef -->
+                    <!-- Kitchen Screen - Admin, Manager & Chef -->
                     <li class="<?= ($currentPage ?? '') === 'kitchen' ? 'mm-active' : '' ?>">
                         <a href="<?= url('kitchen') ?>" target="_blank">
                             <i class="bi bi-display"></i>
-                            <span class="nav-text">Écran Cuisine</span>
+                            <span class="nav-text">Kitchen Screen</span>
                         </a>
                     </li>
                     <?php endif; ?>
                 </ul>
                 
-                <!-- Badge rôle -->
+                <!-- Role Badge -->
                 <div class="text-center mt-4 px-3">
                     <?php
                     $roleLabels = [
                         'admin' => ['Admin', 'danger'],
-                        'manager' => ['Gérant', 'primary'],
-                        'chef' => ['Cuisinier', 'warning'],
-                        'cashier' => ['Caissier', 'success'],
-                        'waiter' => ['Serveur', 'info'],
+                        'manager' => ['Manager', 'primary'],
+                        'chef' => ['Chef', 'warning'],
+                        'cashier' => ['Cashier', 'success'],
+                        'waiter' => ['Waiter', 'info'],
                     ];
                     $roleInfo = $roleLabels[$staffRole] ?? ['Staff', 'secondary'];
                     ?>
@@ -301,7 +301,7 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
             <div class="container">
                 
                 <?php 
-                // Messages flash
+                // Flash messages
                 $flashMessages = Session::getInstance()->getFlash();
                 foreach ($flashMessages as $type => $messages): 
                     $alertClass = $type === 'error' ? 'danger' : ($type === 'success' ? 'success' : 'info');
@@ -322,7 +322,7 @@ $userName = Session::getInstance()->getStaffName() ?? 'Admin';
         <!-- Footer -->
         <div class="footer">
             <div class="copyright">
-                <p>Copyright © <?= date('Y') ?> <a href="<?= url('/') ?>" target="_blank">SIGR</a>. Tous droits réservés.</p>
+                <p>Copyright © <?= date('Y') ?> <a href="<?= url('/') ?>" target="_blank">SIGR</a>. All rights reserved.</p>
             </div>
         </div>
     </div>

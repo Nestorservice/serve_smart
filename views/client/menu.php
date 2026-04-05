@@ -1,6 +1,6 @@
 <?php
 /**
- * SIGR Client Menu - Premium Redesign
+ * SIGR Client Menu - Dribbble POS Redesign
  */
 
 use Core\Helpers;
@@ -17,6 +17,17 @@ $cart = $cart ?? [];
 $readOnly = $readOnly ?? false;
 $cartCount = count($cart);
 
+// Calculate Cart Totals
+$cartSubtotal = 0;
+foreach ($cart as $item) {
+    if (isset($item['product']['price']) && isset($item['quantity'])) {
+        $cartSubtotal += $item['product']['price'] * $item['quantity'];
+    }
+}
+$taxRate = Helpers::getSetting('tax_rate', 0);
+$taxAmount = $cartSubtotal * ($taxRate / 100);
+$cartTotal = $cartSubtotal + $taxAmount;
+
 // Default food images by category slug/icon
 $defaultImages = [
     'burger' => 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
@@ -27,235 +38,449 @@ $defaultImages = [
     'default' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop',
 ];
 
-// Category icons mapping
 $categoryIcons = [];
 foreach ($categories as $cat) {
     $categoryIcons[$cat['id']] = $cat['icon'] ?? 'tag';
 }
 
 function getProductImage($product, $defaultImages, $categoryIcons) {
-    if (!empty($product['image_url'])) {
-        return url($product['image_url']);
-    }
+    if (!empty($product['image_url'])) { return url($product['image_url']); }
     $catId = $product['category_id'] ?? 0;
     $icon = $categoryIcons[$catId] ?? 'tag';
-    // Map icons to images
-    $iconMap = [
-        'egg-fried' => 'burger', 'cup-hot' => 'drink', 'tropical-storm' => 'drink',
-        'ice-cream' => 'dessert', 'cake' => 'dessert', 'fire' => 'burger',
-        'heart' => 'salad', 'leaf' => 'salad', 'cup-straw' => 'drink',
-    ];
+    $iconMap = [ 'egg-fried' => 'burger', 'cup-hot' => 'drink', 'tropical-storm' => 'drink', 'ice-cream' => 'dessert', 'cake' => 'dessert', 'fire' => 'burger', 'heart' => 'salad', 'leaf' => 'salad', 'cup-straw' => 'drink' ];
     $key = $iconMap[$icon] ?? 'default';
     return $defaultImages[$key] ?? $defaultImages['default'];
 }
 
 ob_start();
 ?>
-
-<!-- Hero Banner -->
-<div class="menu-hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-        <div class="hero-badge">
-            <i class="bi bi-gem"></i> La Gastronomie Africaine
-        </div>
-        <h1>L'art des <span class="hero-highlight">Saveurs</span></h1>
-        <p>Une expérience culinaire délicate, préparée avec passion.</p>
-        
-        <!-- Search -->
-        <div class="hero-search">
-            <i class="bi bi-search"></i>
-            <input type="text" id="searchInput" placeholder="Rechercher un plat, une boisson...">
-        </div>
-    </div>
-</div>
-
-<!-- Category Navigation -->
-<div class="categories-nav" id="categoriesNav">
-    <div class="categories-scroll">
-        <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . e($tableNumber) : '')) ?>" 
-           class="cat-chip <?= !$selectedCategory ? 'active' : '' ?>">
-            <i class="bi bi-grid-fill"></i>
-            <span>Tout</span>
-            <span class="cat-count"><?= count($products) ?></span>
-        </a>
-        <?php foreach ($categories as $category): ?>
-        <a href="<?= url('client/menu?category=' . $category['id'] . ($tableNumber ? '&table=' . e($tableNumber) : '')) ?>" 
-           class="cat-chip <?= $selectedCategory == $category['id'] ? 'active' : '' ?>">
-            <i class="bi bi-<?= e($category['icon'] ?? 'tag') ?>"></i>
-            <span><?= e($category['name_fr'] ?? $category['name'] ?? '') ?></span>
-            <span class="cat-count"><?= $category['product_count'] ?? 0 ?></span>
-        </a>
-        <?php endforeach; ?>
-    </div>
-</div>
-
-<?php if (!empty($featured) && !$selectedCategory): ?>
-<!-- Featured Section -->
-<section class="featured-section">
-    <div class="section-header">
-        <h2>Créations Signatures</h2>
-        <span class="section-line"></span>
-    </div>
-    <div class="featured-scroll">
-        <?php foreach (array_slice($featured, 0, 4) as $product): ?>
-        <div class="featured-card">
-            <div class="featured-img">
-                <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" alt="<?= e($product['name_fr'] ?? '') ?>">
-                <div class="featured-badge">Signature</div>
-            </div>
-            <div class="featured-info">
-                <h4><?= e($product['name_fr'] ?? $product['name'] ?? '') ?></h4>
-                <span class="price-tag"><?= Helpers::formatPrice($product['price']) ?></span>
-            </div>
-            <?php if (!$readOnly): ?>
-            <form action="<?= url('client/cart/add') ?>" method="POST" class="add-to-cart-form">
-                <?= csrf_field() ?>
-                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                <input type="hidden" name="quantity" value="1">
-                <?php if ($tableNumber): ?>
-                <input type="hidden" name="table" value="<?= e($tableNumber) ?>">
-                <?php endif; ?>
-                <button type="submit" class="featured-add-btn">
-                    <i class="bi bi-plus-lg"></i>
-                </button>
-            </form>
-            <?php endif; ?>
-        </div>
-        <?php endforeach; ?>
-    </div>
-</section>
-<?php endif; ?>
-
-<!-- Products Grid -->
-<section class="products-section">
-    <div class="section-header">
-        <h2>
-            <?= $selectedCategory ? e($categories[array_search($selectedCategory, array_column($categories, 'id'))]['name_fr'] ?? 'Catégorie') : 'Notre Carte' ?>
-        </h2>
-        <span class="product-count"><?= count($products) ?> plat<?= count($products) > 1 ? 's' : '' ?></span>
-    </div>
+<style>
+    /* Content overrides */
+    .cat-selector {
+        display: flex;
+        gap: 15px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        scrollbar-width: none; /* Firefox */
+    }
+    .cat-selector::-webkit-scrollbar { display: none; }
     
-    <div class="products-grid" id="productsGrid">
-        <?php if (empty($products)): ?>
-        <div class="empty-state">
-            <div class="empty-icon">🍽️</div>
-            <h3>Menu bientôt disponible</h3>
-            <p>Nous préparons de délicieuses surprises pour vous</p>
+    .cat-item {
+        background: var(--bg-color); /* darker than card */
+        border: 1px solid var(--border-color);
+        padding: 8px 16px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-muted);
+        text-decoration: none;
+        white-space: nowrap;
+        transition: 0.2s;
+    }
+    .cat-item img {
+        width: 24px;
+        height: 24px;
+        border-radius: 40%;
+        object-fit: cover;
+    }
+    .cat-item.active, .cat-item:hover {
+        background: var(--bg-color);
+        border-color: var(--primary-orange);
+        color: var(--text-main);
+    }
+    
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    
+    .prd-card {
+        background: var(--bg-color);
+        border-radius: var(--radius-lg);
+        padding: 10px;
+        transition: 0.3s;
+        border: 1px solid var(--border-color);
+        position: relative;
+    }
+    .prd-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255,159,28,0.5);
+    }
+    
+    .prd-img {
+        width: 100%;
+        height: 160px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        margin-bottom: 15px;
+        background: #fff; /* gives a white backdrop to PNGs like dribbble */
+    }
+    
+    .prd-info { padding: 0 5px; }
+    .prd-title {
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+    }
+    .prd-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 15px;
+        height: 36px; /* truncate 2 lines */
+        overflow: hidden;
+    }
+    
+    .prd-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .prd-price {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-main);
+    }
+    .prd-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    /* Cart Sidebar */
+    .cart-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .cart-header h4 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+    
+    .cart-items {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    .cart-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg-color);
+        padding: 10px;
+        border-radius: var(--radius-md);
+        margin-bottom: 12px;
+    }
+    .cart-item img {
+        width: 50px; height: 50px;
+        border-radius: var(--radius-sm);
+        object-fit: cover;
+    }
+    .cart-item-info { flex: 1; }
+    .cart-item-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .cart-item-price { font-size: 0.9rem; color: var(--primary-orange); font-weight: 600;}
+    
+    .qty-control {
+        display: flex;
+        align-items: center;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        padding: 2px 5px;
+    }
+    .qty-btn {
+        background: none; border: none; color: var(--text-main);
+        width: 20px; height: 20px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; cursor: pointer;
+    }
+    .qty-btn:hover { color: var(--primary-orange); }
+    .qty-val { font-size: 0.85rem; width: 20px; text-align: center; }
+    
+    .cart-footer {
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+        background: var(--bg-color);
+    }
+    .cart-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+    .cart-row.total {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed var(--border-color);
+        color: var(--text-main);
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+    .checkout-btn {
+        background: var(--primary-orange);
+        color: var(--bg-color);
+        width: 100%;
+        border: none;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .checkout-btn:hover { background: var(--primary-hover); transform: translateY(-2px);}
+    
+    .add-to-cart-form button {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        border-radius: 50px;
+        padding: 6px 16px;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+    .add-to-cart-form button:hover {
+        background: var(--primary-orange);
+        color: var(--bg-color);
+        border-color: var(--primary-orange);
+    }
+</style>
+
+<div class="app-layout">
+    
+    <!-- LEFT: MENU -->
+    <div class="main-content">
+        <h4 class="mb-4">Product Category</h4>
+        <div class="cat-selector">
+            <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . e($tableNumber) : '')) ?>" 
+               class="cat-item <?= !$selectedCategory ? 'active' : '' ?>">
+                All (<?= count($products) ?>)
+            </a>
+            <?php foreach ($categories as $category): ?>
+            <a href="<?= url('client/menu?category=' . $category['id'] . ($tableNumber ? '&table=' . e($tableNumber) : '')) ?>" 
+               class="cat-item <?= $selectedCategory == $category['id'] ? 'active' : '' ?>">
+                <i class="bi bi-<?= e($category['icon'] ?? 'tag') ?>"></i>
+                <?= e(!empty($category['name_en']) ? $category['name_en'] : ($category['name_fr'] ?? '')) ?>
+            </a>
+            <?php endforeach; ?>
         </div>
-        <?php else: ?>
-        <?php foreach ($products as $product): ?>
-        <div class="product-card-wrap" data-name="<?= strtolower(e($product['name_fr'] ?? $product['name'] ?? '')) ?>" data-desc="<?= strtolower(e($product['description_fr'] ?? '')) ?>">
-            <div class="product-card2">
-                <div class="product-img-wrap">
-                    <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" 
-                         alt="<?= e($product['name_fr'] ?? '') ?>" loading="lazy">
-                    <?php if (!empty($product['is_featured'])): ?>
-                    <span class="prod-badge badge-hot">Signature</span>
-                    <?php endif; ?>
-                    <?php if (!empty($product['preparation_time'])): ?>
-                    <span class="prod-badge badge-time">
-                        <i class="bi bi-clock"></i> <?= $product['preparation_time'] ?> min
-                    </span>
-                    <?php endif; ?>
-                </div>
-                <div class="product-details">
-                    <div class="product-meta">
-                        <h5 class="product-name"><?= e($product['name_fr'] ?? $product['name'] ?? '') ?></h5>
-                        <p class="product-desc"><?= e(mb_substr($product['description_fr'] ?? $product['description'] ?? 'Plat fait maison avec amour', 0, 70)) ?></p>
-                    </div>
-                    <div class="product-bottom">
-                        <span class="product-price2"><?= Helpers::formatPrice($product['price']) ?></span>
-                        <?php if (!isset($product['is_available']) || $product['is_available']): ?>
-                            <?php if (!$readOnly): ?>
-                            <form action="<?= url('client/cart/add') ?>" method="POST" class="add-to-cart-form">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <?php 
+                $catName = 'Our Menu';
+                if ($selectedCategory) {
+                    $cIndex = array_search($selectedCategory, array_column($categories, 'id'));
+                    if ($cIndex !== false) {
+                        $catName = !empty($categories[$cIndex]['name_en']) ? $categories[$cIndex]['name_en'] : ($categories[$cIndex]['name_fr'] ?? 'Category');
+                    }
+                }
+            ?>
+            <h5 class="mb-0"><?= e($catName) ?></h5>
+            <small class="text-muted">Showing <?= count($products) ?> Results</small>
+        </div>
+
+        <div class="products-grid">
+            <?php foreach ($products as $product): ?>
+            <div class="prd-card">
+                <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" alt="" class="prd-img">
+                <div class="prd-info">
+                    <div class="prd-title"><?= e(!empty($product['name_en']) ? $product['name_en'] : ($product['name_fr'] ?? '')) ?></div>
+                    <div class="prd-desc"><?= e(!empty($product['description_en']) ? $product['description_en'] : ($product['description_fr'] ?? 'A delicious choice.')) ?></div>
+                    <div class="prd-bottom mt-2">
+                        <span class="prd-price"><?= Helpers::formatPrice($product['price']) ?></span>
+                        
+                        <?php if (!$readOnly): ?>
+                        <div class="add-to-cart-container d-flex align-items-center gap-2">
+                            <div class="qty-selector d-flex align-items-center bg-dark rounded-pill px-2 border" style="border-color: var(--border-color) !important;">
+                                <button type="button" class="btn btn-sm text-white p-1 border-0 card-qty-minus"><i class="bi bi-dash"></i></button>
+                                <input type="number" class="card-qty-input bg-transparent border-0 text-white text-center fw-bold" value="1" min="1" style="width: 30px; font-size: 0.85rem;">
+                                <button type="button" class="btn btn-sm text-white p-1 border-0 card-qty-plus"><i class="bi bi-plus"></i></button>
+                            </div>
+                            <form action="<?= url('client/cart/add') ?>" method="POST" class="add-to-cart-form m-0">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                <input type="hidden" name="quantity" value="1">
+                                <input type="hidden" name="quantity" class="form-qty-input" value="1">
                                 <?php if ($tableNumber): ?>
                                 <input type="hidden" name="table" value="<?= e($tableNumber) ?>">
                                 <?php endif; ?>
-                                <button type="submit" class="add-btn">
-                                    Ajouter
-                                </button>
+                                <button type="submit">Add</button>
                             </form>
-                            <?php else: ?>
-                            <a href="<?= url('/') ?>" class="scan-btn">
-                                Scanner à table
-                            </a>
-                            <?php endif; ?>
+                        </div>
                         <?php else: ?>
-                        <span class="unavailable-badge">Indisponible</span>
+                        <span class="prd-meta text-warning"><i class="bi bi-qr-code"></i> Scan</span>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
+            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
-        <?php endif; ?>
     </div>
-</section>
 
-<!-- Floating Cart Button (Mobile) -->
-<?php if ($cartCount > 0 && !$readOnly): ?>
-<a href="<?= url('client/cart') ?>" class="floating-cart" id="floatingCart">
-    <div class="floating-cart-inner">
-        <div class="fc-left">
-            <i class="bi bi-cart3"></i>
-            <span class="fc-badge"><?= $cartCount ?></span>
+    <!-- RIGHT: CART SIDEBAR -->
+    <div class="sidebar-cart">
+        <div class="cart-header">
+            <h4>Current Orders</h4>
+            <a href="<?= url('client/cart/clear') ?>" class="text-muted"><i class="bi bi-trash"></i></a>
         </div>
-        <span class="fc-text">Voir la sélection</span>
-        <i class="bi bi-arrow-right"></i>
+        
+        <div class="cart-items">
+            <?php if (empty($cart)): ?>
+                <div class="text-center text-muted" style="margin-top: 100px;">
+                    <i class="bi bi-cart-x" style="font-size: 3rem; opacity: 0.5;"></i>
+                    <p class="mt-3">No items selected</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($cart as $id => $item): ?>
+                <div class="cart-item">
+                    <img src="<?= getProductImage($item['product'], $defaultImages, $categoryIcons) ?>" alt="">
+                    <div class="cart-item-info">
+                        <div class="cart-item-title"><?= e(!empty($item['product']['name_en']) ? $item['product']['name_en'] : ($item['product']['name_fr'] ?? '')) ?></div>
+                        <div class="cart-item-price"><?= Helpers::formatPrice($item['product']['price']) ?></div>
+                    </div>
+                    <form action="<?= url('client/cart/update') ?>" method="POST" class="qty-control m-0 p-0 d-flex bg-transparent border-0 qty-update-form">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="key" value="<?= $item['key'] ?>">
+                        <input type="hidden" name="quantity" class="qty-input" value="<?= $item['quantity'] ?>">
+                        <button type="button" class="qty-btn btn-minus"><i class="bi bi-dash"></i></button>
+                        <div class="qty-val fw-bold text-white"><?= $item['quantity'] ?></div>
+                        <button type="button" class="qty-btn btn-plus"><i class="bi bi-plus"></i></button>
+                    </form>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Helper to format currency
+            const formatPrice = (price) => {
+                return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF' }).format(price).replace('XAF', 'FCFA');
+            };
+
+            // 1. Menu Card Quantity Controls
+            document.querySelectorAll('.add-to-cart-container').forEach(container => {
+                const minusBtn = container.querySelector('.card-qty-minus');
+                const plusBtn = container.querySelector('.card-qty-plus');
+                const qtyInput = container.querySelector('.card-qty-input');
+                const formQtyInput = container.querySelector('.form-qty-input');
+                
+                minusBtn.addEventListener('click', () => {
+                    let val = parseInt(qtyInput.value);
+                    if (val > 1) { val--; qtyInput.value = val; formQtyInput.value = val; }
+                });
+                
+                plusBtn.addEventListener('click', () => {
+                    let val = parseInt(qtyInput.value);
+                    val++; qtyInput.value = val; formQtyInput.value = val;
+                });
+
+                qtyInput.addEventListener('change', () => {
+                    let val = parseInt(qtyInput.value);
+                    if (isNaN(val) || val < 1) val = 1;
+                    qtyInput.value = val; formQtyInput.value = val;
+                });
+            });
+
+            // 2. AJAX Add to Cart
+            document.querySelectorAll('.add-to-cart-form').forEach(form => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const btn = form.querySelector('button');
+                    const originalText = btn.innerHTML;
+                    
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Instant feedback
+                            btn.innerHTML = '<i class="bi bi-check"></i>';
+                            setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1000);
+                            
+                            // Refresh sidebar
+                            location.reload(); // Simple refresh for now to rebuild enriched cart items, or we could fetch JSON
+                        } else {
+                            alert(result.message || 'Error adding to cart');
+                            btn.innerHTML = originalText; btn.disabled = false;
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        btn.innerHTML = originalText; btn.disabled = false;
+                    }
+                });
+            });
+
+            // 3. AJAX Update Cart (Sidebar)
+            document.querySelectorAll('.qty-update-form').forEach(form => {
+                const minusBtn = form.querySelector('.btn-minus');
+                const plusBtn = form.querySelector('.btn-plus');
+                const qtyInput = form.querySelector('.qty-input');
+                
+                const updateQty = async (newVal) => {
+                    const formData = new FormData(form);
+                    formData.set('quantity', newVal);
+                    
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            location.reload(); 
+                        }
+                    } catch (err) { console.error(err); }
+                };
+
+                minusBtn.addEventListener('click', () => {
+                    const val = parseInt(qtyInput.value);
+                    if (val >= 1) updateQty(val - 1);
+                });
+                
+                plusBtn.addEventListener('click', () => {
+                    updateQty(parseInt(qtyInput.value) + 1);
+                });
+            });
+        });
+        </script>
+
+        <div class="cart-footer">
+            <div class="cart-row">
+                <span>Subtotal</span>
+                <span><?= Helpers::formatPrice($cartSubtotal) ?></span>
+            </div>
+            <div class="cart-row">
+                <span>Tax Rate (<?= $taxRate ?>%)</span>
+                <span><?= Helpers::formatPrice($taxAmount) ?></span>
+            </div>
+            <div class="cart-row total">
+                <span>Total</span>
+                <span><?= Helpers::formatPrice($cartTotal) ?></span>
+            </div>
+
+            <?php if (!$readOnly && !empty($cart)): ?>
+            <form action="<?= url('client/order') ?>" method="POST" class="mt-3">
+                <?= csrf_field() ?>
+                <button type="submit" class="checkout-btn">Continue to payment <i class="bi bi-arrow-right ms-2"></i></button>
+            </form>
+            <?php elseif (empty($cart)): ?>
+            <button class="checkout-btn mt-3" style="opacity: 0.5; background: var(--border-color); color: var(--text-muted);" disabled>Continue to payment <i class="bi bi-arrow-right ms-2"></i></button>
+            <?php endif; ?>
+        </div>
     </div>
-</a>
-<?php endif; ?>
 
-<script>
-// Search
-document.getElementById('searchInput')?.addEventListener('input', function(e) {
-    const q = e.target.value.toLowerCase();
-    document.querySelectorAll('.product-card-wrap').forEach(item => {
-        const name = item.dataset.name || '';
-        const desc = item.dataset.desc || '';
-        item.style.display = (name.includes(q) || desc.includes(q)) ? '' : 'none';
-    });
-    // Show/hide empty state
-    const visible = document.querySelectorAll('.product-card-wrap[style=""], .product-card-wrap:not([style])').length;
-    const grid = document.getElementById('productsGrid');
-    const existing = grid.querySelector('.search-empty');
-    if (visible === 0 && q.length > 0) {
-        if (!existing) {
-            grid.insertAdjacentHTML('beforeend', '<div class="search-empty empty-state"><div class="empty-icon">🔍</div><h3>Aucun résultat</h3><p>Essayez un autre terme</p></div>');
-        }
-    } else if (existing) {
-        existing.remove();
-    }
-});
-
-// Add to cart animation
-document.querySelectorAll('.add-to-cart-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        const btn = this.querySelector('button, .featured-add-btn');
-        if (btn) {
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-check-lg"></i> Ajouté !';
-            btn.classList.add('added');
-            setTimeout(() => {
-                btn.innerHTML = original;
-                btn.classList.remove('added');
-            }, 1200);
-        }
-    });
-});
-
-// Sticky categories shadow
-const catNav = document.getElementById('categoriesNav');
-if (catNav) {
-    window.addEventListener('scroll', () => {
-        catNav.classList.toggle('scrolled', window.scrollY > 200);
-    });
-}
-</script>
+</div>
 
 <?php
 $content = ob_get_clean();

@@ -1,25 +1,24 @@
 <?php
 /**
- * SIGR Order Tracking - FoodDesk Style
+ * SIGR Order Tracking - Premium Dark POS Style
  */
 
 use Core\Helpers;
 
 // Variables
-$pageTitle = 'Suivi de commande';
+$pageTitle = 'Order Tracking';
 $currentPage = 'tracking';
 $order = $order ?? null;
 $orderItems = $orderItems ?? [];
 $tableNumber = $order['table_number'] ?? null;
-$cart = [];
 
 $statuses = [
-    'pending' => ['label' => 'En attente', 'icon' => 'clock', 'color' => 'warning'],
-    'confirmed' => ['label' => 'Confirmée', 'icon' => 'check-circle', 'color' => 'info'],
-    'preparing' => ['label' => 'En préparation', 'icon' => 'fire', 'color' => 'primary'],
-    'ready' => ['label' => 'Prête !', 'icon' => 'bell', 'color' => 'success'],
-    'served' => ['label' => 'Servie', 'icon' => 'check2-all', 'color' => 'secondary'],
-    'cancelled' => ['label' => 'Annulée', 'icon' => 'x-circle', 'color' => 'danger'],
+    'pending' => ['label' => 'Pending', 'icon' => 'clock', 'color' => '#ffc107', 'desc' => 'Order received'],
+    'confirmed' => ['label' => 'Confirmed', 'icon' => 'check-circle', 'color' => '#17a2b8', 'desc' => 'Sent to kitchen'],
+    'preparing' => ['label' => 'Preparing', 'icon' => 'fire', 'color' => '#ff6b35', 'desc' => 'Chef is cooking'],
+    'ready' => ['label' => 'Ready', 'icon' => 'bell', 'color' => '#28a745', 'desc' => 'Waiting for server'],
+    'served' => ['label' => 'Served', 'icon' => 'check2-all', 'color' => '#adb5bd', 'desc' => 'Enjoy your meal!'],
+    'cancelled' => ['label' => 'Cancelled', 'icon' => 'x-circle', 'color' => '#dc3545', 'desc' => 'Order was cancelled'],
 ];
 
 $currentStatus = $order['status'] ?? 'pending';
@@ -29,158 +28,285 @@ $currentIndex = array_search($currentStatus, $statusOrder);
 ob_start();
 ?>
 
+<style>
+/* Premium Tracking Styles */
+.tracking-container {
+    max-width: 800px;
+    margin: 0 auto;
+    color: #e0e0e0;
+}
+.tracking-header {
+    background: rgba(255, 107, 53, 0.05);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.tracking-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, transparent, #ff6b35, transparent);
+}
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: rgba(26, 28, 35, 0.8);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(255, 107, 53, 0.2);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+    margin-bottom: 1rem;
+    position: relative;
+}
+.status-badge i {
+    font-size: 2.5rem;
+}
+.status-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    z-index: 0;
+}
+@keyframes ping {
+    75%, 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 3rem;
+    margin-top: 2rem;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.1);
+}
+.timeline-item {
+    position: relative;
+    padding-bottom: 2rem;
+}
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -3rem;
+    top: 5px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #2a2d3e;
+    border: 2px solid rgba(255,255,255,0.2);
+    margin-left: 11px;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+.timeline-item.completed::before {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+}
+.timeline-item.active::before {
+    background: #ffc107;
+    border-color: #ffc107;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.8);
+    animation: activePulse 1.5s infinite;
+}
+@keyframes activePulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+.timeline-card {
+    background: rgba(42, 45, 62, 0.4);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: all 0.3s ease;
+}
+.timeline-item.active .timeline-card {
+    background: rgba(42, 45, 62, 0.8);
+    border-color: rgba(255, 193, 7, 0.3);
+}
+.timeline-item.completed .timeline-card {
+    opacity: 0.7;
+}
+
+/* Order Details */
+.receipt-card {
+    background: #1e2029;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px dashed rgba(255,255,255,0.1);
+}
+.receipt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.receipt-item:last-child {
+    border-bottom: none;
+}
+.qty-badge {
+    background: rgba(255, 107, 53, 0.1);
+    color: #ff6b35;
+    width: 35px; height: 35px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    font-weight: bold;
+}
+</style>
+
 <?php if (!$order): ?>
-<!-- Pas de commande -->
 <div class="text-center py-5">
     <i class="bi bi-search display-1 text-muted mb-4"></i>
-    <h2 class="mb-3">Commande non trouvée</h2>
-    <p class="text-muted mb-4">Vérifiez le numéro de commande et réessayez</p>
-    <a href="<?= url('/') ?>" class="btn px-4 py-2" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">
-        <i class="bi bi-house me-2"></i>Retour à l'accueil
+    <h2 class="mb-3">Order Not Found</h2>
+    <p class="text-muted mb-4">Please check your order number and try again.</p>
+    <a href="<?= url('/') ?>" class="btn px-4 py-2" style="background: transparent; border: 1px solid #ff6b35; color: #ff6b35; text-transform: uppercase;">
+        <i class="bi bi-house me-2"></i>Back to Home
     </a>
 </div>
 <?php else: ?>
 
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        
-        <!-- Header Commande -->
-        <div class="card border-0 mb-4" style="border-radius: var(--radius); overflow: hidden; background: var(--card-bg); border: 1px solid var(--border-light) !important;">
-            <div class="card-body p-0">
-                <div class="p-4 text-center" style="border-bottom: 1px solid var(--border-light);">
-                    <h4 class="mb-2" style="font-family: 'Playfair Display', serif; color: var(--primary);">Commande #<?= e($order['order_number'] ?? $order['id']) ?></h4>
-                    <p class="mb-0" style="color: var(--text-light); font-style: italic;">
-                        <i class="bi bi-clock me-1"></i>
-                        <?= Helpers::formatDate($order['created_at'] ?? 'now', 'd/m/Y à H:i') ?>
-                    </p>
-                </div>
-                
-                <!-- Statut actuel -->
-                <div class="p-4 text-center">
-                    <?php $status = $statuses[$currentStatus] ?? $statuses['pending']; ?>
-                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" 
-                         style="width: 80px; height: 80px; background: rgba(<?= $status['color'] == 'warning' ? '255, 193, 7' : ($status['color'] == 'success' ? '40, 167, 69' : '102, 126, 234') ?>, 0.15);">
-                        <i class="bi bi-<?= $status['icon'] ?> display-5 text-<?= $status['color'] ?>"></i>
-                    </div>
-                    <h3 class="text-<?= $status['color'] ?> fw-bold mb-1"><?= $status['label'] ?></h3>
-                    <?php if ($currentStatus === 'preparing'): ?>
-                    <p class="text-muted mb-0">Notre chef prépare votre commande avec soin</p>
-                    <?php elseif ($currentStatus === 'ready'): ?>
-                    <p class="text-success mb-0 fw-bold">
-                        <i class="bi bi-bell-fill me-1"></i>
-                        Votre commande est prête ! Un serveur vous l'apporte.
-                    </p>
-                    <?php elseif ($currentStatus === 'pending'): ?>
-                    <p class="text-muted mb-0">Votre commande a bien été reçue</p>
-                    <?php endif; ?>
-                </div>
-            </div>
+<div class="tracking-container pb-5">
+    
+    <!-- Status Header -->
+    <div class="tracking-header mb-5 shadow-lg">
+        <?php $statusInfo = $statuses[$currentStatus] ?? $statuses['pending']; ?>
+        <div class="status-badge">
+            <div class="status-glow" style="background: <?= $statusInfo['color'] ?>; opacity: 0.2;"></div>
+            <i class="bi bi-<?= $statusInfo['icon'] ?>" style="color: <?= $statusInfo['color'] ?>; z-index: 1;"></i>
         </div>
+        <h2 class="fw-bold mb-2" style="color: <?= $statusInfo['color'] ?>"><?= strtoupper($statusInfo['label']) ?></h2>
+        <p class="text-muted mb-3"><?= $statusInfo['desc'] ?></p>
         
-        <!-- Timeline de progression -->
-        <div class="card border-0 mb-4" style="background: var(--card-bg); border: 1px solid var(--border-light) !important; border-radius: var(--radius);">
-            <div class="card-body p-4">
-                <h5 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary); font-style: italic;">
-                    <i class="bi bi-signpost-2 me-2"></i>
-                    Suivi de l'expérience
-                </h5>
-                
-                <div class="tracking-timeline">
-                    <?php foreach ($statusOrder as $index => $statusKey): ?>
-                    <?php 
-                    $stepStatus = $statuses[$statusKey];
-                    $isCompleted = $currentIndex !== false && $index < $currentIndex;
-                    $isActive = $statusKey === $currentStatus && $currentStatus !== 'served';
-                    $isFuture = $currentIndex === false || $index > $currentIndex;
-                    ?>
-                    <div class="tracking-step <?= $isCompleted ? 'completed' : '' ?> <?= $isActive ? 'active' : '' ?>">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="mb-1 <?= $isFuture ? 'text-muted' : '' ?>"><?= $stepStatus['label'] ?></h6>
-                                <small class="text-muted">
-                                    <?php if ($isCompleted): ?>
-                                    <i class="bi bi-check-circle text-success me-1"></i> Terminé
-                                    <?php elseif ($isActive): ?>
-                                    <i class="bi bi-arrow-right text-primary me-1"></i> En cours...
-                                    <?php else: ?>
-                                    <i class="bi bi-circle text-muted me-1"></i> À venir
-                                    <?php endif; ?>
-                                </small>
-                            </div>
-                            <i class="bi bi-<?= $stepStatus['icon'] ?> fs-4 <?= $isFuture ? 'text-muted' : 'text-' . $stepStatus['color'] ?>"></i>
+        <div class="d-flex justify-content-center gap-3 text-sm" style="color: #a0a0a0;">
+            <span><i class="bi bi-receipt me-1"></i> #<?= e($order['order_number'] ?? $order['id']) ?></span>
+            <span><i class="bi bi-clock me-1"></i> <?= Helpers::formatDate($order['created_at'] ?? 'now', 'H:i') ?></span>
+            <?php if ($tableNumber): ?>
+            <span><i class="bi bi-geo-alt me-1"></i> Table <?= e($tableNumber) ?></span>
+            <?php endif; ?>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        
+        <!-- Timeline Column -->
+        <div class="col-md-6">
+            <h5 class="fw-bold mb-0 ps-3" style="color: #ff6b35;">Live Tracking</h5>
+            <div class="timeline">
+                <?php foreach ($statusOrder as $index => $statusKey): ?>
+                <?php 
+                $stepStatus = $statuses[$statusKey];
+                $isCompleted = $currentIndex !== false && $index < $currentIndex;
+                $isActive = $statusKey === $currentStatus && $currentStatus !== 'served';
+                $isFuture = $currentIndex === false || $index > $currentIndex;
+                ?>
+                <div class="timeline-item <?= $isCompleted ? 'completed' : '' ?> <?= $isActive ? 'active' : '' ?>">
+                    <div class="timeline-card d-flex align-items-center">
+                        <div class="me-3 fs-3" style="color: <?= $isFuture ? '#444' : $stepStatus['color'] ?>">
+                            <i class="bi bi-<?= $stepStatus['icon'] ?>"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold <?= $isFuture ? 'text-muted' : 'text-white' ?>"><?= $stepStatus['label'] ?></h6>
+                            <small class="text-muted">
+                                <?php if ($isCompleted): ?> Done
+                                <?php elseif ($isActive): ?> In Progress...
+                                <?php else: ?> Upcoming
+                                <?php endif; ?>
+                            </small>
                         </div>
                     </div>
-                    <?php endforeach; ?>
                 </div>
+                <?php endforeach; ?>
             </div>
         </div>
         
-        <!-- Détails de la commande -->
-        <div class="card border-0" style="background: var(--card-bg); border: 1px solid var(--border-light) !important; border-radius: var(--radius);">
-            <div class="card-body p-4">
-                <h5 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary); font-style: italic;">
-                    <i class="bi bi-basket me-2"></i>
-                    Détails du repas
-                </h5>
-                
-                <?php if ($tableNumber): ?>
-                <div class="d-flex align-items-center mb-4 p-3 justify-content-center text-center" style="border-bottom: 1px solid var(--border-light);">
-                    <div>
-                        <small style="color: var(--text-light); text-transform: uppercase; letter-spacing: 2px;">Table</small><br>
-                        <strong style="color: var(--primary); font-size: 1.2rem; font-family: 'Playfair Display', serif;"><?= e($tableNumber) ?></strong>
-                    </div>
-                </div>
+        <!-- Order Details Column -->
+        <div class="col-md-6">
+            <h5 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+                <span style="color: #ff6b35;">Order Summary</span>
+                <?php if (!empty($order['payment_status']) && $order['payment_status'] === 'paid'): ?>
+                <span class="badge bg-success" style="font-size: 0.75rem;">PAID</span>
+                <?php else: ?>
+                <span class="badge bg-warning text-dark" style="font-size: 0.75rem;">UNPAID</span>
                 <?php endif; ?>
-                
+            </h5>
+            
+            <div class="receipt-card">
                 <?php foreach ($orderItems as $item): ?>
-                <div class="d-flex align-items-center py-3 border-bottom">
-                    <div class="d-flex align-items-center justify-content-center me-3" 
-                         style="width: 40px; height: 40px; border: 1px solid var(--primary); border-radius: 50%;">
-                        <span style="color: var(--primary); font-family: 'Playfair Display', serif;"><?= $item['quantity'] ?></span>
+                <div class="receipt-item">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="qty-badge"><?= $item['quantity'] ?></div>
+                        <div>
+                            <div class="fw-bold text-white"><?= e(($lang === 'en' && !empty($item['name_en'])) ? $item['name_en'] : ($item['name_fr'] ?? 'Item')) ?></div>
+                            <small class="text-muted"><?= Helpers::formatPrice($item['unit_price'] ?? 0) ?> each</small>
+                        </div>
                     </div>
-                    <div class="flex-grow-1">
-                        <h6 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--text);"><?= e($item['product_name'] ?? 'Produit') ?></h6>
-                        <small style="color: var(--text-light);"><?= Helpers::formatPrice($item['unit_price'] ?? 0) ?> / unité</small>
+                    <div class="fw-bold" style="color: #ff6b35;">
+                        <?= Helpers::formatPrice($item['total_price'] ?? 0) ?>
                     </div>
-                    <strong style="color: var(--primary)"><?= Helpers::formatPrice($item['subtotal'] ?? 0) ?></strong>
                 </div>
                 <?php endforeach; ?>
                 
-                <?php if (!empty($order['notes'])): ?>
-                <div class="mt-4 p-3 rounded" style="background: #fff9e6; border-left: 4px solid #ffc107;">
-                    <small class="text-muted d-block mb-1"><i class="bi bi-chat-dots me-1"></i> Notes :</small>
-                    <span><?= e($order['notes']) ?></span>
-                </div>
-                <?php endif; ?>
-                
-                <hr class="my-4">
-                
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="fs-5 fw-bold">Total</span>
-                    <span class="fs-4 fw-bold" style="color: var(--primary)">
-                        <?= Helpers::formatPrice($order['total_amount'] ?? 0) ?>
-                    </span>
+                <div class="mt-4 pt-4" style="border-top: 1px dashed rgba(255,255,255,0.2);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="text-white"><?= Helpers::formatPrice($order['subtotal'] ?? 0) ?></span>
+                    </div>
+                    <?php if (($order['tax_amount'] ?? 0) > 0): ?>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">VAT (<?= $order['tax_rate'] ?? 0 ?>%)</span>
+                        <span class="text-white"><?= Helpers::formatPrice($order['tax_amount']) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary">
+                        <span class="fs-5 fw-bold text-white">TOTAL</span>
+                        <span class="fs-4 fw-bold" style="color: #ff6b35;">
+                            <?= Helpers::formatPrice($order['total_amount'] ?? 0) ?>
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Actions -->
-        <div class="text-center mt-4">
-            <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . $tableNumber : '')) ?>" class="btn px-4 py-2" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); letter-spacing: 1px; text-transform: uppercase;">
-                Nouvelle commande
-            </a>
+            
+            <!-- Actions -->
+            <div class="mt-4 d-grid gap-2">
+                <?php if (empty($order['payment_status']) || $order['payment_status'] !== 'paid'): ?>
+                <a href="<?= url('client/payment/' . $order['id']) ?>" class="btn btn-lg w-100 fw-bold border-0" style="background: #ff6b35; color: white;">
+                    <i class="bi bi-wallet2 me-2"></i> Pay Now
+                </a>
+                <?php else: ?>
+                <a href="<?= url('client/ticket/' . $order['id']) ?>" class="btn btn-lg w-100 fw-bold border-0" style="background: var(--success); color: white;">
+                    <i class="bi bi-receipt me-2"></i> View Receipt
+                </a>
+                <?php endif; ?>
+                <a href="<?= url('client/menu' . ($tableNumber ? '?table=' . $tableNumber : '')) ?>" class="btn btn-lg w-100 fw-bold" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                    <i class="bi bi-plus-circle me-2"></i> New Order
+                </a>
+            </div>
+            
         </div>
         
     </div>
 </div>
 
-<!-- Auto-refresh pour les commandes en cours -->
+<!-- Auto-refresh for pending/preparing orders -->
 <?php if (in_array($currentStatus, ['pending', 'confirmed', 'preparing'])): ?>
 <script>
-    // Rafraîchir la page toutes les 30 secondes pour les commandes en cours
-    setTimeout(function() {
-        location.reload();
-    }, 30000);
+    setTimeout(function() { location.reload(); }, 30000);
 </script>
 <?php endif; ?>
 
@@ -188,7 +314,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-
-// Inclure le layout
 include VIEWS_PATH . '/layouts/client.php';
 ?>
