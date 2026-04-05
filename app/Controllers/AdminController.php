@@ -120,10 +120,15 @@ class AdminController extends \Core\Controller
             Helpers::jsonError('Invalid token', 403);
         }
         
-        $productModel = new ProductModel();
+        $categoryId = (int) ($_POST['category_id'] ?? 0);
+        if ($categoryId <= 0) {
+            $this->session->setFlash('error', 'Please select a valid category');
+            header('Location: ' . Helpers::url('admin/menu/add'));
+            exit;
+        }
         
         $data = [
-            'category_id' => (int) ($_POST['category_id'] ?? 0),
+            'category_id' => $categoryId,
             'name_fr' => Helpers::sanitize($_POST['name_fr'] ?? ''),
             'name_en' => Helpers::sanitize($_POST['name_en'] ?? ''),
             'description_fr' => Helpers::sanitize($_POST['description_fr'] ?? ''),
@@ -135,14 +140,21 @@ class AdminController extends \Core\Controller
             'requires_stock' => isset($_POST['requires_stock'])
         ];
         
-        // Handle uploaded image
-        if (!empty($_FILES['image']['name'])) {
-            $data['image_url'] = $this->handleImageUpload($_FILES['image']);
+        try {
+            // Handle uploaded image
+            if (!empty($_FILES['image']['name'])) {
+                $data['image_url'] = $this->handleImageUpload($_FILES['image']);
+            }
+            
+            $productId = $productModel->create($data);
+            
+            $this->session->setFlash('success', 'Product created successfully');
+        } catch (\Exception $e) {
+            error_log("Create Error: " . $e->getMessage());
+            $this->session->setFlash('error', 'Creation failed: ' . $e->getMessage());
+            header('Location: ' . Helpers::url('admin/menu/add'));
+            exit;
         }
-        
-        $productId = $productModel->create($data);
-        
-        $this->session->setFlash('success', 'Product created successfully');
         header('Location: ' . Helpers::url('admin/menu'));
         exit;
     }
@@ -180,8 +192,15 @@ class AdminController extends \Core\Controller
         
         $productModel = new ProductModel();
         
+        $categoryId = (int) ($_POST['category_id'] ?? 0);
+        if ($categoryId <= 0) {
+            $this->session->setFlash('error', 'Please select a valid category');
+            header('Location: ' . Helpers::url('admin/menu/edit/' . $id));
+            exit;
+        }
+        
         $data = [
-            'category_id' => (int) ($_POST['category_id'] ?? 0),
+            'category_id' => $categoryId,
             'name_fr' => Helpers::sanitize($_POST['name_fr'] ?? ''),
             'name_en' => Helpers::sanitize($_POST['name_en'] ?? ''),
             'description_fr' => Helpers::sanitize($_POST['description_fr'] ?? ''),
@@ -193,16 +212,22 @@ class AdminController extends \Core\Controller
             'requires_stock' => isset($_POST['requires_stock'])
         ];
         
-        if (!empty($_FILES['image']['name'])) {
-            $uploadedPath = $this->handleImageUpload($_FILES['image']);
-            if ($uploadedPath) {
-                $data['image_url'] = $uploadedPath;
+        try {
+            if (!empty($_FILES['image']['name'])) {
+                $uploadedPath = $this->handleImageUpload($_FILES['image']);
+                if ($uploadedPath) {
+                    $data['image_url'] = $uploadedPath;
+                }
             }
+            
+            $productModel->update((int) $id, $data);
+            
+            $this->session->setFlash('success', 'Product updated successfully');
+        } catch (\Exception $e) {
+            error_log("Update Error (ID $id): " . $e->getMessage());
+            $this->session->setFlash('error', 'Update failed: ' . $e->getMessage());
         }
         
-        $productModel->update((int) $id, $data);
-        
-        $this->session->setFlash('success', 'Product updated successfully');
         header('Location: ' . Helpers::url('admin/menu'));
         exit;
     }
@@ -216,10 +241,16 @@ class AdminController extends \Core\Controller
             Helpers::jsonError('Invalid token', 403);
         }
         
-        $productModel = new ProductModel();
-        $productModel->delete((int) $id);
+        try {
+            $productModel = new ProductModel();
+            $productModel->delete((int) $id);
+            
+            $this->session->setFlash('success', 'Product deleted');
+        } catch (\Exception $e) {
+            error_log("Delete Error (ID $id): " . $e->getMessage());
+            $this->session->setFlash('error', 'Delete failed: ' . $e->getMessage());
+        }
         
-        $this->session->setFlash('success', 'Product deleted');
         header('Location: ' . Helpers::url('admin/menu'));
         exit;
     }

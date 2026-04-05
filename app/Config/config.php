@@ -16,6 +16,7 @@ define('APP_PATH', ROOT_PATH . '/app');
 define('VIEWS_PATH', ROOT_PATH . '/views');
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('LANG_PATH', ROOT_PATH . '/lang');
+define('LOGS_PATH', ROOT_PATH . '/logs');
 
 // URL de base dynamique
 // Si APP_URL est défini, on l'utilise, sinon on détecte si on est à la racine ou dans /serve_smart
@@ -68,8 +69,10 @@ if (DEBUG_MODE) {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 } else {
-    error_reporting(0);
+    error_reporting(E_ALL); // Log everything, even in prod
     ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+    ini_set('error_log', LOGS_PATH . '/php_errors.log');
 }
 
 // Autoloader simple pour les classes
