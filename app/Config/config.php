@@ -6,8 +6,9 @@
  * de configuration de l'application.
  */
 
-// Mode debug (désactiver en production)
-define('DEBUG_MODE', true);
+// Mode debug (désactiver en production via APP_ENV=production)
+$isProduction = getenv('APP_ENV') === 'production';
+define('DEBUG_MODE', !$isProduction);
 
 // Chemins de base
 define('ROOT_PATH', dirname(dirname(__DIR__)));
@@ -23,7 +24,7 @@ define('ASSETS_URL', BASE_URL . '/public/assets');
 // Configuration session client
 define('SESSION_NAME', 'SIGR_SESSION');
 define('SESSION_LIFETIME', 10800); // 3 heures en secondes
-define('SESSION_COOKIE_SECURE', false); // true en production HTTPS
+define('SESSION_COOKIE_SECURE', $isProduction); // true en production HTTPS
 define('SESSION_COOKIE_HTTPONLY', true);
 define('SESSION_COOKIE_SAMESITE', 'Strict');
 

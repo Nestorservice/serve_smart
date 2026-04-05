@@ -33,19 +33,41 @@ class Database
             $config['charset']
         );
         
-        try {
-            $this->pdo = new PDO(
-                $dsn,
-                $config['username'],
-                $config['password'],
-                $config['options']
-            );
-        } catch (PDOException $e) {
-            if (DEBUG_MODE) {
-                throw new Exception('Erreur de connexion à la base de données: ' . $e->getMessage());
+        // Tentative de connexion avec retry (utile pour les cold starts sur Render)
+        $maxRetries = 3;
+        $lastException = null;
+        
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $this->pdo = new PDO(
+                    $dsn,
+                    $config['username'],
+                    $config['password'],
+                    $config['options']
+                );
+                return; // Connexion réussie
+            } catch (PDOException $e) {
+                $lastException = $e;
+                if ($attempt < $maxRetries) {
+                    sleep(2); // Attendre 2 secondes avant de réessayer
+                }
             }
-            throw new Exception('Erreur de connexion à la base de données');
         }
+        
+        // Toutes les tentatives ont échoué
+        if (DEBUG_MODE) {
+            $debugInfo = sprintf(
+                "Host: %s | Port: %s | DB: %s | User: %s | SSL: %s | Erreur: %s",
+                $config['host'],
+                $config['port'],
+                $config['database'],
+                $config['username'],
+                isset($config['options'][PDO::MYSQL_ATTR_SSL_CA]) ? 'oui' : 'non',
+                $lastException->getMessage()
+            );
+            throw new Exception('Erreur de connexion à la base de données: ' . $debugInfo);
+        }
+        throw new Exception('Erreur de connexion à la base de données. Veuillez réessayer.');
     }
     
     /**
