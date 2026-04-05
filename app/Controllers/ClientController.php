@@ -562,13 +562,15 @@ class ClientController extends \Core\Controller
             Helpers::jsonError('Invalid order', 404);
         }
         
-        // For cash, simply say it will be paid at the cashier.
-        // Cuisine status remains "confirmed"
+        // For cash, update status to pending so cashier can see it.
         if ($method === 'cash') {
+            $this->orderModel->updatePaymentStatus($orderId, 'pending', 'cash');
+            
             Helpers::jsonSuccess([
                 'message' => Helpers::__('payment.pay_at_cashier'),
                 'redirect' => url('client/ticket/' . $orderId)
             ]);
+            return;
         }
         
         // TODO: Mobile Money Integration (Orange, MTN, Moov)

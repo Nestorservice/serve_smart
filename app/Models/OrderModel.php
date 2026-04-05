@@ -365,15 +365,27 @@ class OrderModel extends \Core\Model
     }
     
     /**
-     * Marquer comme payé
+     * Mettre à jour le statut du paiement
+     */
+    public function updatePaymentStatus(int $orderId, string $status, ?string $method = null): bool
+    {
+        $data = ['payment_status' => $status];
+        if ($method !== null) {
+            $data['payment_method'] = $method;
+        }
+        
+        if ($status === 'paid') {
+            $data['paid_at'] = date('Y-m-d H:i:s');
+        }
+        
+        return $this->db->update('orders', $data, 'id = ?', [$orderId]) > 0;
+    }
+
+    /**
+     * Marquer comme payé (Alias pour compatibilité)
      */
     public function markAsPaid(int $orderId, string $method): bool
     {
-        return $this->db->update(
-            'orders', 
-            ['payment_status' => 'paid', 'payment_method' => $method, 'paid_at' => date('Y-m-d H:i:s')], 
-            'id = ?', 
-            [$orderId]
-        ) > 0;
+        return $this->updatePaymentStatus($orderId, 'paid', $method);
     }
 }

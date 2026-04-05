@@ -19,6 +19,7 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="16x16" href="<?= url('public/assets/images/favicon.png') ?>">
+    <link rel="apple-touch-icon" href="<?= url('public/assets/images/favicon.png') ?>">
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -303,7 +304,7 @@
     </div>
     <?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
         // Register Service Worker
         if ('serviceWorker' in navigator) {

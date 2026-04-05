@@ -284,7 +284,7 @@ ob_start();
         <div class="products-grid">
             <?php foreach ($products as $product): ?>
             <div class="prd-card">
-                <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" alt="" class="prd-img">
+                <img src="<?= getProductImage($product, $defaultImages, $categoryIcons) ?>" alt="" class="prd-img" loading="lazy">
                 <div class="prd-info">
                     <div class="prd-title"><?= e(!empty($product['name_en']) ? $product['name_en'] : ($product['name_fr'] ?? '')) ?></div>
                     <div class="prd-desc"><?= e(!empty($product['description_en']) ? $product['description_en'] : ($product['description_fr'] ?? 'A delicious choice.')) ?></div>
